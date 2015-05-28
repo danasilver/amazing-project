@@ -29,6 +29,7 @@ int main(int argc, char* argv[]){
 						}
 						if(nAvatars <1 || nAvatars > AM_MAX_AVATAR){ //AM_MAX_AVATAR == 10. (amazing.h)
 							printf("Number of avatars must be between 1 and 10 inclusive \n");
+							return -1;
 						}
 						break;
 			case 'd' :
@@ -75,9 +76,10 @@ int main(int argc, char* argv[]){
 	hints.ai_socktype = SOCK_STREAM; // TCP
 	hints.ai_protocol = 0; //assignment instructions
 
-	int check = getaddrinfo(hostname,"17325",&hints,&res);
+	int check = getaddrinfo(hostname,AM_SERVER_PORT,&hints,&res);
 	if(check != 0 /* || check != NULL */){
 		printf("Something went wrong in acquiring server information... [ getaddrinfo() ] \n");
+		return -1;
 	}
 	
 	if((sockfd = socket(res->ai_family, res->ai_socktype, 0)) < 0){
@@ -85,6 +87,7 @@ int main(int argc, char* argv[]){
 	return -1;
 	}
 
+	printf("%d, %d\n", res->ai_addr->sa_family, res->ai_addrlen);
 	int c_check;
 	c_check = connect(sockfd, res->ai_addr, res->ai_addrlen);
 		if(c_check==-1){
@@ -107,6 +110,7 @@ int main(int argc, char* argv[]){
 	//We convery nAvatars and difficulty to uint32_t and then convert them to Network Byte Order using htonl(uint32_t num)
 
 	send(sockfd, &initMessage, sizeof(AM_Message), 0); //we set the flag to 0 according to assgnment.
+	printf("initMessage Sent! \n");
 
 	AM_Message recvMessage;
 	memset(&recvMessage, 0, sizeof(AM_Message));
@@ -118,7 +122,7 @@ int main(int argc, char* argv[]){
 		printf("Received message AM_INIT_FAILED. AM_INIT has not been successfully processed. \n");
 		return -1;
 	}
-
+	printf("recvMessage received! \n");
 	//we need to convert the Network Byte Order data back to Host Byte Order
 	recvMessage.init_ok.MazePort = ntohl(recvMessage.init_ok.MazePort);
 	recvMessage.init_ok.MazeWidth = ntohl(recvMessage.init_ok.MazeWidth);
@@ -143,7 +147,7 @@ int main(int argc, char* argv[]){
 
 	char logFileName[200];
 	sprintf(logFileName, "AMAZING_%s_%d_%d", userID, nAvatars, difficulty);
-
+	printf("LogName is : %s -- [AMAZING_userID_nAvatars_difficulty \n", logFileName);
 	FILE* logFile = fopen(logFileName, "w");
 	if(logFile == NULL){
 		printf("File -->%s<--could not be opened \n", logFileName);
@@ -154,6 +158,7 @@ int main(int argc, char* argv[]){
 	time(&curtime);
 
 	fprintf(logFile, "%s, %d, %s", userID, (int)recvMessage.init_ok.MazePort, ctime(&curtime));
+	printf("logFile created and written to! \n");
 	fclose(logFile);
 	return 1;
 }
