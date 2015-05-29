@@ -131,7 +131,7 @@ int main(int argc, char* argv[]){
 
 	// getlogin_r(username, 256); // http://linux.die.net/man/3/getlogin_r
 
- 	return -1;
+ 	// return -1;
 	// }
 
 	// int userID = pwd.pw_uid; // http://linux.die.net/man/3/getpwnam
@@ -141,7 +141,8 @@ int main(int argc, char* argv[]){
 	// getpwnam_r(username, &pwd, buf, 16384, &result);
 	// if(result == NULL){
 	// 	printf("getpwnam_r went wrong \n");
-	//	char* userID = getenv("USER");
+
+	char* userID = getenv("USER");
 
 	char logFileName[200];
 	sprintf(logFileName, "AMAZING_%s_%d_%d", userID, nAvatars, difficulty);
@@ -155,7 +156,7 @@ int main(int argc, char* argv[]){
 	char walls[MazeHeight][MazeWidth][4];
 
 	Move lastMoves[nAvatars];
-	memset()
+	// memset()
 
 	time_t curtime;
 	time(&curtime);
