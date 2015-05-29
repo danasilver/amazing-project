@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-std=c11 -Wall -pedantic
+CFLAGS=-std=gnu99 -Wall -pedantic
 MAZE_C_DEPS=src/AM_Startup.c
 MAZE_H_DEPS=src/amazing.h
 

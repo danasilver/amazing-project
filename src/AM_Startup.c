@@ -12,8 +12,6 @@
 #include <time.h> // time() and ctime()
 #include "amazing.h"
 
-
-
 int main(int argc, char* argv[]){
 
 	int nAvatars;
@@ -60,9 +58,9 @@ int main(int argc, char* argv[]){
 	//1. Create a socket (use the socket() function) -- which is an 'endpoint'
 	//2. Connect with the server (use the connect() function)
 
-	//Since we are using TCP client and IPv4 protocols, we will use SOCK_STREAM as the type and AF_INET as the protocol family. 
+	//Since we are using TCP client and IPv4 protocols, we will use SOCK_STREAM as the type and AF_INET as the protocol family.
 	//Protocol value is set to 0. (Lec 25, "protocol value can be set to 0 for this course.")
-	
+
 	int sockfd; //socket descriptor
 
 	//We will use getaddrinfo() to get information about the server in order to connect to it. NOT gethostbyname() ( https://piazza.com/class/i6mshngxse220l?cid=758 )
@@ -81,7 +79,7 @@ int main(int argc, char* argv[]){
 		printf("Something went wrong in acquiring server information... [ getaddrinfo() ] \n");
 		return -1;
 	}
-	
+
 	if((sockfd = socket(res->ai_family, res->ai_socktype, 0)) < 0){
 	printf("Error in creating socket... \n"); //We probably should never get an error for this. This is just a sanity check.
 	return -1;
@@ -114,7 +112,7 @@ int main(int argc, char* argv[]){
 
 	AM_Message recvMessage;
 	memset(&recvMessage, 0, sizeof(AM_Message));
-	
+
 	recv(sockfd, &recvMessage, sizeof(AM_Message),0);
 
 	recvMessage.type = ntohl(recvMessage.type); //Get the 'type' of message.
@@ -133,17 +131,17 @@ int main(int argc, char* argv[]){
 
 	// getlogin_r(username, 256); // http://linux.die.net/man/3/getlogin_r
 
+ 	return -1;
+	// }
+
+	// int userID = pwd.pw_uid; // http://linux.die.net/man/3/getpwnam
 	// struct passwd pwd;
 	// struct passwd* result;
 	// char buf[16384];
 	// getpwnam_r(username, &pwd, buf, 16384, &result);
 	// if(result == NULL){
 	// 	printf("getpwnam_r went wrong \n");
-	// 	return -1;
-	// }
-
-	// int userID = pwd.pw_uid; // http://linux.die.net/man/3/getpwnam
-	char* userID = getenv("USER");
+	//	char* userID = getenv("USER");
 
 	char logFileName[200];
 	sprintf(logFileName, "AMAZING_%s_%d_%d", userID, nAvatars, difficulty);
@@ -154,11 +152,16 @@ int main(int argc, char* argv[]){
 		return -1;
 	}
 
+	char walls[MazeHeight][MazeWidth][4];
+
+	Move lastMoves[nAvatars];
+	memset()
+
 	time_t curtime;
 	time(&curtime);
 
 	fprintf(logFile, "%s, %d, %s", userID, (int)recvMessage.init_ok.MazePort, ctime(&curtime));
 	printf("logFile created and written to! \n");
 	fclose(logFile);
-	return 1;
+	return 0;
 }
