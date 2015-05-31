@@ -4,14 +4,15 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netint/in.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include "amazing.h"
 #include "amazing_client.h"
 
-void *new_amazing_client(amazing_client_args *args) {
+void *new_amazing_client(AM_Args *args) {
     if (!args || !args->ipAddress || !args->logfile) {
         return NULL;
     }
@@ -39,20 +40,20 @@ void *new_amazing_client(amazing_client_args *args) {
     ready_message.avatar_ready.AvatarId = htonl(args->avatarId);
     send(sockfd, &ready_message, sizeof(AM_Message), 0);
 
-    AM_Message turnMessage;
+    AM_Message turn;
     int i, moves = 0;
 
     for (;;) {
-        memset(&turnMessage, 0, sizeof(AM_Message));
-        recv(sockfd, &turnMessage, sizeof(AM_Message), 0);
-        turnMessage.type = ntohl(turnMessage.type);
+        memset(&turn, 0, sizeof(AM_Message));
+        recv(sockfd, &turn, sizeof(AM_Message), 0);
+        turn.type = ntohl(turn.type);
 
-        if (IS_AM_ERROR(turnMessage.type)) {
+        if (IS_AM_ERROR(turn.type)) {
             fprintf(stderr, "Error receiving message from server.");
             break;
         }
 
-        if (turnMessage.type & AM_MAZE_SOLVED) {
+        if (turn.type & AM_MAZE_SOLVED) {
             // if avatar 0 indicate maze solved and write to file
 
             printf("Maze solved.");
@@ -60,30 +61,30 @@ void *new_amazing_client(amazing_client_args *args) {
         }
 
         moves++;
-        turnMessage.TurnId = ntohl(turnMessage.TurnId);
+        turn.avatar_turn.TurnId = ntohl(turn.avatar_turn.TurnId);
         for (i = 0; i < args->nAvatars; i++) {
-            turnMessage.Pos[i].x = ntohl(turnMessage.Pos[i].x);
-            turnMessage.Pos[i].y = ntohl(turnMessage.Pos[i].y);
+            turn.avatar_turn.Pos[i].x = ntohl(turn.avatar_turn.Pos[i].x);
+            turn.avatar_turn.Pos[i].y = ntohl(turn.avatar_turn.Pos[i].y);
         }
 
-        int nextTurn = turnMessage.TurnId;
-        int prevTurn = (turnMessage.TurnId - 1) % args->nAvatars;
+        int nextTurn = turn.avatar_turn.TurnId;
+        int prevTurn = (turn.avatar_turn.TurnId - 1) % args->nAvatars;
 
         if (moves > 1) {
-            if (turnMessage.Pos[prevTurn].x == lastMoves[prevTurn].pos.x &&
-                turnMessage.Pos[prevTurn].y == lastMoves[prevTurn].pos.y) {
+            if (turn.avatar_turn.Pos[prevTurn].x == lastMoves[prevTurn].pos.x &&
+                turn.avatar_turn.Pos[prevTurn].y == lastMoves[prevTurn].pos.y) {
 
                 addTwoSidedWall(walls, lastMoves, prevTurn);
             }
         }
 
-        if (turnMessage.TurnId == args->avatarId) {
-            draw(walls, lastMoves, turnMessage.Pos, prevTurn);
+        if (turn.avatar_turn.TurnId == args->avatarId) {
+            draw(walls, lastMoves, turn.avatar_turn.Pos, prevTurn);
 
-            lastMoves[prevTurn].pos.x = turnMessage.Pos[prevTurn].x;
-            lastMoves[prevTurn].pos.y = turnMessage.Pos[prevTurn].y;
+            lastMoves[prevTurn].pos.x = turn.avatar_turn.Pos[prevTurn].x;
+            lastMoves[prevTurn].pos.y = turn.avatar_turn.Pos[prevTurn].y;
 
-            int nextDirection = generateMove(walls, lastMoves, turnMessage.TurnId);
+            int nextDirection = generateMove(walls, lastMoves, turn.avatar_turn.TurnId);
 
             // send move to server
         }
