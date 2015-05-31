@@ -32,6 +32,11 @@ int main(int argc, char *argv[]){
         }
     }
 
+    if (argc != 7) {
+        printUsage();
+        exit(EXIT_FAILURE);
+    }
+
     while((option = getopt(argc, argv, "n:d:h:")) != -1){
         switch(option){
         case 'n':
