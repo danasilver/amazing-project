@@ -211,6 +211,14 @@ int main(int argc, char *argv[]){
     char ipAddress[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(servaddr.sin_addr), ipAddress, INET_ADDRSTRLEN);
 
+    Move *lastMoves = calloc(nAvatars, sizeof(Move));
+    char **walls = calloc(MazeWidth, sizeof(char *));
+
+    int w;
+    for (w = 0; w < (int) MazeWidth; w++) {
+        walls[w] = calloc(MazeHeight * 5, sizeof(char));
+    }
+
     pthread_t *threads = calloc(nAvatars, sizeof(pthread_t));
     int i;
     for (i = 0; i  < nAvatars; i++) {
@@ -229,19 +237,16 @@ int main(int argc, char *argv[]){
         strcpy(logfileBuf, logFileName);
         params->logfile = logfileBuf;
 
-        //pthread_create(&threads[i], NULL, PLACEHOLDER, (void *) tParam);
+        params->walls = walls;
+        params->lastMoves = lastMoves;
+
+        pthread_create(&threads[i], NULL, new_amazing_client, (void *)params);
     }
-        //char walls[MazeHeight][MazeWidth][4];
 
-        //Move lastMoves[nAvatars];
-        //memset();
+    fclose(logFile);
 
-        fclose(logFile);
-
-        //cleanUps
-
-        return 0;
-    }
+    return 0;
+}
 
 int integerLength(int x) {
     if (x == 0) return 1;
