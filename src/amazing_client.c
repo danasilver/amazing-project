@@ -31,12 +31,14 @@
 
 
 void *new_amazing_client(AM_Args *args) {
-    if (!args || !args->ipAddress || !args->logfile) {
+    if (!args || !args->ipAddress || !args->logfile || !args->walls || !args->lastMove) {
         return NULL;
     }
 
     int sockfd;
     struct sockaddr_in servaddr;
+    char **walls = args->walls;
+    Move *lastMoves = args->lastMoves;
 
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("Error:");
@@ -89,18 +91,18 @@ void *new_amazing_client(AM_Args *args) {
         int prevTurn = (turn.avatar_turn.TurnId - 1) % args->nAvatars;
 
         if (moves > 1) {
-            if (turn.avatar_turn.Pos[prevTurn].x == lastMoves[prevTurn].pos.x &&
-                turn.avatar_turn.Pos[prevTurn].y == lastMoves[prevTurn].pos.y) {
+            if (turn.avatar_turn.Pos[prevTurn].x == lastMoves[prevTurn]->pos.x &&
+                turn.avatar_turn.Pos[prevTurn].y == lastMoves[prevTurn]->pos.y) {
 
-                addTwoSidedWall(walls, lastMoves, prevTurn);
+                addTwoSidedWall(walls, lastMoves, prevTurn, args->width, args->height);
             }
         }
 
         if (turn.avatar_turn.TurnId == args->avatarId) {
 	    draw(walls, lastMoves, turn.avatar_turn.Pos, prevTurn);
 
-	    lastMoves[prevTurn].pos.x = turn.avatar_turn.Pos[prevTurn].x;
-	    lastMoves[prevTurn].pox.y = turn.avatar_turn.Pos[prevTurn].y;
+	    lastMoves[prevTurn]->pos.x = turn.avatar_turn.Pos[prevTurn].x;
+	    lastMoves[prevTurn]->pox.y = turn.avatar_turn.Pos[prevTurn].y;
 
             int nextDirection = generateMove(walls, lastMoves, turn.avatar_turn.TurnId);
 
@@ -116,8 +118,8 @@ void *new_amazing_client(AM_Args *args) {
 
 
 int addTwoSidedWall(char **walls, Move *lastMoves, uint32_t prevTurn, uint32_t width, uint32_t height) {
-    int i = lastMoves[prevTurn]->x;
-    int j = lastMoves[prevTurn]->y;
+    int i = lastMoves[prevTurn]->pos.x;
+    int j = lastMoves[prevTurn]->pos.y;
 
     switch (lastMoves[prevTurn]->direction) {
     case 'N':
