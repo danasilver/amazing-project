@@ -7,16 +7,16 @@
  *
  * Input:
  *
- * Output: 
+ * Output:
  *
  * Error Conditions:
  *
  * Special Considerations:
  */
 /* ========================================================================== */
-// ---------------- Open Issues             
+// ---------------- Open Issues
 
-// ---------------- System includes e.g., <stdio.h>   
+// ---------------- System includes e.g., <stdio.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>                 // memset
@@ -142,7 +142,7 @@ int addTwoSidedWall(char **walls, Move *lastMoves, uint32_t prevTurn, uint32_t w
 	addOneSidedWall(walls, i-1, j, 'E', width, height);
 	break;
     }
-    
+
     return 0;
 }
 
@@ -161,7 +161,7 @@ int addOneSidedWall(char **walls, uint32_t x, uint32_t y, char direction, uint32
 
     walls[x][y][dirLen] = direction;
     walls[x][y][dirLen + 1] = '\0';
-    
+
     return 0;
 }
 

@@ -211,7 +211,9 @@ int main(int argc, char *argv[]){
     char ipAddress[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(servaddr.sin_addr), ipAddress, INET_ADDRSTRLEN);
 
-    Move *lastMoves = calloc(nAvatars, sizeof(Move));
+    Move *lastMoves;
+    initializeLastMoves(&lastMoves, nAvatars);
+
     char **walls = calloc(MazeWidth, sizeof(char *));
 
     int w;
@@ -244,6 +246,31 @@ int main(int argc, char *argv[]){
     }
 
     fclose(logFile);
+
+    return 0;
+}
+
+int initializeLastMoves(Move **moveArray, int n) {
+    if (!*moveArray) {
+        return 1;
+    }
+
+    *moveArray = calloc(n, sizeof(Move *));
+    if (!*moveArray) {
+        fprintf(stderr, "Out of memory!\n");
+        return 1;
+    }
+
+    int i;
+    for (i = 0; i < n; i++) {
+        XYPos *newPos = calloc(1, sizeof(XYPos));
+        if (!pos) {
+            fprintf(stderr, "Out of memory!\n");
+            return 1;
+        }
+
+        (*moveArray)[i]->pos = newPos;
+    }
 
     return 0;
 }
