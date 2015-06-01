@@ -205,7 +205,8 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
 
-    fprintf(logFile, "%s, %" PRIu32 ", %s", userID, recvMessage.init_ok.MazePort, ctime(&curtime));
+    fprintf(logFile, "%s, %" PRIu32 ", %s",
+            userID, recvMessage.init_ok.MazePort, ctime(&curtime));
     printf("logFile created and written to! \n");
 
     char ipAddress[INET_ADDRSTRLEN];

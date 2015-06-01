@@ -85,28 +85,33 @@ void *new_amazing_client(AM_Args *args) {
         for (i = 0; i < args->nAvatars; i++) {
             turn.avatar_turn.Pos[i].x = ntohl(turn.avatar_turn.Pos[i].x);
             turn.avatar_turn.Pos[i].y = ntohl(turn.avatar_turn.Pos[i].y);
+
+            printf("id: %lu, x: %lu, y: %lu",
+                    (unsigned long) turn.avatar_turn.TurnId,
+                    (unsigned long) turn.avatar_turn.Pos[i].x,
+                    (unsigned long) turn.avatar_turn.Pos[i].y);
         }
 
         int nextTurn = turn.avatar_turn.TurnId;
         int prevTurn = (turn.avatar_turn.TurnId - 1) % args->nAvatars;
 
         if (moves > 1) {
-            if (turn.avatar_turn.Pos[prevTurn].x == lastMoves[prevTurn]->pos.x &&
-                turn.avatar_turn.Pos[prevTurn].y == lastMoves[prevTurn]->pos.y) {
+            if (turn.avatar_turn.Pos[prevTurn].x == lastMoves[prevTurn]->pos->x &&
+                turn.avatar_turn.Pos[prevTurn].y == lastMoves[prevTurn]->pos->y) {
 
                 addTwoSidedWall(walls, lastMoves, prevTurn, args->width, args->height);
             }
         }
 
         if (turn.avatar_turn.TurnId == args->avatarId) {
-	    draw(walls, lastMoves, turn.avatar_turn.Pos, prevTurn);
+            draw(walls, lastMoves, turn.avatar_turn.Pos, prevTurn);
 
-	    lastMoves[prevTurn]->pos.x = turn.avatar_turn.Pos[prevTurn].x;
-	    lastMoves[prevTurn]->pox.y = turn.avatar_turn.Pos[prevTurn].y;
+            lastMoves[prevTurn]->pos->x = turn.avatar_turn.Pos[prevTurn].x;
+            lastMoves[prevTurn]->pox->y = turn.avatar_turn.Pos[prevTurn].y;
 
             int nextDirection = generateMove(walls, lastMoves, turn.avatar_turn.TurnId);
 
-	    lastMoves[nextTurn].direction = nextDirection;
+            lastMoves[nextTurn].direction = nextDirection;
 
             // send move to server
         }
@@ -118,45 +123,46 @@ void *new_amazing_client(AM_Args *args) {
 
 
 int addTwoSidedWall(char **walls, Move *lastMoves, uint32_t prevTurn, uint32_t width, uint32_t height) {
-    int i = lastMoves[prevTurn]->pos.x;
-    int j = lastMoves[prevTurn]->pos.y;
+    int i = lastMoves[prevTurn]->pos->x;
+    int j = lastMoves[prevTurn]->pos->y;
 
     switch (lastMoves[prevTurn]->direction) {
     case 'N':
-	addOneSidedWall(walls, i, j, 'N', width, height);
-	addOneSidedWall(walls, i, j-1, 'S', width, height);
-	break;
+        addOneSidedWall(walls, i, j, 'N', width, height);
+        addOneSidedWall(walls, i, j - 1, 'S', width, height);
+        break;
 
     case 'S':
-	addOneSidedWall(walls, i, j, 'S', width, height);
-	addOneSidedWall(walls, i, j+1, 'N', width, height);
-	break;
+        addOneSidedWall(walls, i, j, 'S', width, height);
+        addOneSidedWall(walls, i, j + 1, 'N', width, height);
+        break;
 
     case 'E':
-	addOneSidedWall(walls, i, j, 'E', width, height);
-	addOneSidedWall(walls, i+1, j, 'W', width, height);
-	break;
+        addOneSidedWall(walls, i, j, 'E', width, height);
+        addOneSidedWall(walls, i + 1, j, 'W', width, height);
+        break;
 
     case 'W':
-	addOneSidedWall(walls, i, j, 'W', width, height);
-	addOneSidedWall(walls, i-1, j, 'E', width, height);
-	break;
+        addOneSidedWall(walls, i, j, 'W', width, height);
+        addOneSidedWall(walls, i - 1, j, 'E', width, height);
+        break;
     }
 
     return 0;
 }
 
-int addOneSidedWall(char **walls, uint32_t x, uint32_t y, char direction, uint32_t width, uint32_t height) {
+int addOneSidedWall(char **walls, uint32_t x, uint32_t y, char direction,
+                    uint32_t width, uint32_t height) {
     int dirLen = strlen(walls[x][y]);
 
     if (x < width || x > width) {
-	return 1;
+        return 1;
     }
     if (y < height || y > height) {
-	return 1;
+        return 1;
     }
     if (string_contains(direction, walls[x], dirLen)) {
-	return 1;
+        return 1;
     }
 
     walls[x][y][dirLen] = direction;
@@ -169,9 +175,9 @@ int addOneSidedWall(char **walls, uint32_t x, uint32_t y, char direction, uint32
 int string_contains(char value, char *array, int size) {
     int i;
     for (i = 0; i < size; i++) {
-	if (array[i] == value) {
-	    return 1;
-	}
+    if (array[i] == value) {
+        return 1;
+    }
     }
     return 0;
 }
