@@ -215,11 +215,19 @@ int main(int argc, char *argv[]){
     Move *lastMoves;
     initializeLastMoves(&lastMoves, nAvatars);
 
-    char **walls = calloc(MazeWidth, sizeof(char *));
+    char ***walls;
+    walls = calloc(recvMessage.init_ok.MazeWidth, sizeof(char **));
 
     int w;
-    for (w = 0; w < (int) MazeWidth; w++) {
-        walls[w] = calloc(MazeHeight * 5, sizeof(char));
+    for (w = 0; w < (int) recvMessage.init_ok.MazeWidth; w++) {
+        walls[w] = calloc(recvMessage.init_ok.MazeHeight, sizeof(char *));
+    }
+
+    int h;
+    for (w = 0; w < (int) recvMessage.init_ok.MazeWidth; w++) {
+        for (h = 0; h < (int) recvMessage.init_ok.MazeHeight; h++) {
+            walls[w][h] = calloc(5, sizeof(char));
+        }
     }
 
     pthread_t *threads = calloc(nAvatars, sizeof(pthread_t));
@@ -240,15 +248,20 @@ int main(int argc, char *argv[]){
         strcpy(logfileBuf, logFileName);
         params->logfile = logfileBuf;
 
+        params->width = recvMessage.init_ok.MazeWidth;
+        params->height = recvMessage.init_ok.MazeHeight;
+
         params->walls = walls;
         params->lastMoves = lastMoves;
 
         pthread_create(&threads[i], NULL, new_amazing_client, (void *)params);
     }
 
-    fclose(logFile);
+    for (i = 0; i < nAvatars; i++) {
+        pthread_join(threads[i], NULL);
+    }
 
-    return 0;
+    fclose(logFile);
 }
 
 int initializeLastMoves(Move **moveArray, int n) {
@@ -256,22 +269,22 @@ int initializeLastMoves(Move **moveArray, int n) {
         return 1;
     }
 
-    *moveArray = calloc(n, sizeof(Move *));
+    *moveArray = calloc(n, sizeof(Move));
     if (!*moveArray) {
         fprintf(stderr, "Out of memory!\n");
         return 1;
     }
 
-    int i;
-    for (i = 0; i < n; i++) {
-        XYPos *newPos = calloc(1, sizeof(XYPos));
-        if (!pos) {
-            fprintf(stderr, "Out of memory!\n");
-            return 1;
-        }
+    // int i;
+    // for (i = 0; i < n; i++) {
+    //     XYPos *newPos = calloc(1, sizeof(XYPos));
+    //     if (!newPos) {
+    //         fprintf(stderr, "Out of memory!\n");
+    //         return 1;
+    //     }
 
-        (*moveArray)[i]->pos = newPos;
-    }
+    //     (**moveArray)[i]->pos = newPos;
+    // }
 
     return 0;
 }

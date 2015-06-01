@@ -2,6 +2,8 @@
  * amazing_client.h
  *
  */
+#ifndef AMAZING_CLIENT_H
+#define AMAZING_CLIENT_H
 
 #include "amazing.h"
 
@@ -18,17 +20,25 @@ typedef struct AM_Args {
     uint32_t mazePort;  // MazePort returned in AM_INIT_OK
     uint32_t width;     // maze width
     uint32_t height;    // maze height
-    char **walls;
+    char ***walls;
     Move *lastMoves;
     char *logfile;      // filename to append to
 } AM_Args;
 
-void *new_amazing_client(AM_Args *args);
+void *new_amazing_client(void *args);
 
 void freeAMArgs(AM_Args *args);
 
-int addTwoSidedWall(char **walls, Move *lastMoves, uint32_t prevTurn, uint32_t width, uint32_t height);
+int addTwoSidedWall(char ***walls, Move *lastMoves,
+                    uint32_t prevTurn, uint32_t width, uint32_t height);
 
-int addOneSidedWall(char **walls, uint32_t x, uint32_t y, char direction, uint32_t width, uint32_t height);
+int addOneSidedWall(char ***walls, uint32_t x, uint32_t y,
+                    char direction, uint32_t width, uint32_t height);
 
-int string_contains(char value, char *array, int size)
+int string_contains(char value, char *array, int size);
+
+void draw(char ***walls, Move *lastMoves, XYPos *newPositions, uint32_t prevTurn);
+
+int generateMove(char ***walls, Move *lastMoves, uint32_t turnId);
+
+#endif // AMAZING_CLIENT_H
