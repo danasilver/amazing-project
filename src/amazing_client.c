@@ -179,6 +179,68 @@ void draw(char ***walls, Move *lastMoves, XYPos *newPositions, uint32_t prevTurn
 }
 
 int generateMove(char ***walls, Move *lastMoves, uint32_t turnId) {
+    int i = lastMoves[prevTurn].pos.x;
+    int j = lastMoves[prevTurn].pos.y;
+    int dirLen = strlen(walls[i][j]);
+
+    switch (lastMoves[turnId].direction) {
+    case 'N':
+	if (!string_contains('W', walls[i][j], dirLen)) {
+	    return 'W';
+	}
+	else if (!string_contains('S', walls[i][j], dirLen)) {
+	    return 'S';
+	}
+	else if (!string_contains('E', walls[i][j], dirLen)) {
+	    return 'E';
+	}
+	else:
+	    return 'N';
+	break;
+
+    case 'S':
+	if (!string_contains('E', walls[i][j], dirLen)) {
+            return 'E';
+        }
+	else if (!string_contains('N', walls[i][j], dirLen)) {
+            return 'N';
+        }
+	else if (!string_contains('W', walls[i][j], dirLen)) {
+            return 'W';
+        }
+	else:
+	    return 'S';
+	break;
+
+    case 'E':
+	if (!string_contains('N', walls[i][j], dirLen)) {
+            return 'N';
+        }
+	else if (!string_contains('W', walls[i][j], dirLen)) {
+            return 'W';
+        }
+	else if (!string_contains('S', walls[i][j], dirLen)) {
+            return 'S';
+        }
+	else:
+	    return 'E';
+	break;
+
+    case 'W':
+	if (!string_contains('S', walls[i][j], dirLen)) {
+	    return 'S';
+	}
+	else if (!string_contains('E', walls[i][j], dirLen)) {
+            return 'E';
+        }
+	else if (!string_contains('N', walls[i][j], dirLen)) {
+            return 'N';
+        }
+	else:
+	    return 'W';
+	break;
+    }
+
     return 0;
 }
 
