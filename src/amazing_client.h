@@ -10,6 +10,7 @@
 typedef struct Move {
     XYPos pos;
     char direction;
+    char attemptedDirection;
 } Move;
 
 typedef struct AM_Args {
@@ -37,9 +38,16 @@ int addOneSidedWall(char ***walls, uint32_t x, uint32_t y,
 
 int string_contains(char value, char *array, int size);
 
-void draw(char ***walls, Move *lastMoves, XYPos *newPositions, uint32_t prevTurn);
+void draw(char ***walls, Move *lastMoves, XYPos *newPositions, uint32_t prevTurn, uint32_t width, uint32_t height, uint32_t nAvatars);
 
 int generateMove(char ***walls, Move *lastMoves, uint32_t turnId);
+
+uint32_t directionToAmazingDirection(char direction);
+
+char directionDiff(int from_x, int from_y, int to_x, int to_y);
+
+int avatarAtLocation(int avatarId,
+                     XYPos *positions, int x, int y);
 
 #endif // AMAZING_CLIENT_H
 
