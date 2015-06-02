@@ -31,4 +31,11 @@ int addTwoSidedWall(char **walls, Move *lastMoves, uint32_t prevTurn, uint32_t w
 
 int addOneSidedWall(char **walls, uint32_t x, uint32_t y, char direction, uint32_t width, uint32_t height);
 
-int string_contains(char value, char *array, int size)
+int string_contains(char value, char *array, int size);
+
+int generateMove(char **walls, Move *lastMoves, uint32_t turn.avatar_turn.TurnId);
+
+// **REMEMBER**
+// add border of maze to **walls
+// write log file function
+// add locks

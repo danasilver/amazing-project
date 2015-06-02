@@ -175,3 +175,6 @@ int string_contains(char value, char *array, int size) {
     }
     return 0;
 }
+
+int generateMove(char **walls, Move *lastMoves, uint32_t turn.avatar_turn.TurnId) {
+}
