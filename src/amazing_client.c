@@ -25,6 +25,7 @@
 #include <netinet/in.h>             // network functionality
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <inttypes.h>               // PRIu32
 
 // ---------------- File includes
 #include "amazing.h"
@@ -40,6 +41,12 @@ void *new_amazing_client(void *threadArgs) {
     }
 
     printf("maze port: %d\n", (int) args->mazePort);
+
+    FILE *logfp = fopen(args->logfile, "a");
+    if (!logfp) {
+        fprintf(stderr, "Error opening logfile");
+        return NULL;
+    }
 
     int sockfd;
     struct sockaddr_in servaddr;
@@ -66,6 +73,9 @@ void *new_amazing_client(void *threadArgs) {
     ready_message.avatar_ready.AvatarId = htonl(args->avatarId);
     send(sockfd, &ready_message, sizeof(AM_Message), 0);
 
+    fprintf(logfp, "Avatar %" PRIu32 " sent ready message to server.\n",
+            args->avatarId);
+
     AM_Message turn;
     int i, moves = 0;
 
@@ -82,7 +92,25 @@ void *new_amazing_client(void *threadArgs) {
         if (turn.type & AM_MAZE_SOLVED) {
             // if avatar 0 indicate maze solved and write to file
 
-            printf("Maze solved.");
+            if (args->avatarId == 0) {
+                printf("Maze solved!\n");
+
+                turn.maze_solved.nAvatars = ntohl(turn.maze_solved.nAvatars);
+                turn.maze_solved.Difficulty = ntohl(turn.maze_solved.Difficulty);
+                turn.maze_solved.nMoves = ntohl(turn.maze_solved.nMoves);
+                turn.maze_solved.Hash = ntohl(turn.maze_solved.Hash);
+
+                fprintf(logfp, "Solved maze with difficulty %" PRIu32
+                               " with %" PRIu32
+                               " avatars in %" PRIu32
+                               " moves. Hash: %" PRIu32 "\n",
+                        turn.maze_solved.Difficulty,
+                        turn.maze_solved.nAvatars,
+                        turn.maze_solved.nMoves,
+                        turn.maze_solved.Hash);
+            }
+
+
             break;
         }
 
@@ -92,10 +120,10 @@ void *new_amazing_client(void *threadArgs) {
             turn.avatar_turn.Pos[i].x = ntohl(turn.avatar_turn.Pos[i].x);
             turn.avatar_turn.Pos[i].y = ntohl(turn.avatar_turn.Pos[i].y);
 
-            // printf("id: %d, x: %lu, y: %lu\n",
-            //         i,
-            //         (unsigned long) turn.avatar_turn.Pos[i].x,
-            //         (unsigned long) turn.avatar_turn.Pos[i].y);
+            fprintf(logfp, "Avatar %d is now at (%d, %d)\n",
+                    i,
+                    (int) turn.avatar_turn.Pos[i].x,
+                    (int) turn.avatar_turn.Pos[i].y);
         }
 
         uint32_t nextTurn = turn.avatar_turn.TurnId;
@@ -121,7 +149,8 @@ void *new_amazing_client(void *threadArgs) {
                 }
             }
 
-            draw(walls, lastMoves, turn.avatar_turn.Pos, prevTurn, args->width, args->height, args->nAvatars);
+            draw(walls, lastMoves, turn.avatar_turn.Pos, prevTurn,
+                 args->width, args->height, args->nAvatars);
 
             lastMoves[prevTurn].pos.x = turn.avatar_turn.Pos[prevTurn].x;
             lastMoves[prevTurn].pos.y = turn.avatar_turn.Pos[prevTurn].y;
@@ -130,19 +159,20 @@ void *new_amazing_client(void *threadArgs) {
 
             lastMoves[nextTurn].attemptedDirection = nextDirection;
 
-            // printf("Moving avatar %d %c\n", (int) nextTurn, nextDirection);
+            fprintf(logfp, "Attempting to move avatar %d direction %d\n",
+                   (int) nextTurn, directionToAmazingDirection(nextDirection));
 
             AM_Message move_message;
             move_message.type = htonl(AM_AVATAR_MOVE);
             move_message.avatar_move.AvatarId = htonl(nextTurn);
             move_message.avatar_move.Direction = htonl(directionToAmazingDirection(nextDirection));
 
-            // sleep(1);
-
             send(sockfd, &move_message, sizeof(AM_Message), 0);
         }
 
     }
+
+    fclose(logfp);
 
     return NULL;
 }
