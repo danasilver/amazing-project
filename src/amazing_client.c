@@ -179,8 +179,8 @@ void draw(char ***walls, Move *lastMoves, XYPos *newPositions, uint32_t prevTurn
 }
 
 int generateMove(char ***walls, Move *lastMoves, uint32_t turnId) {
-    int i = lastMoves[prevTurn].pos.x;
-    int j = lastMoves[prevTurn].pos.y;
+    int i = lastMoves[turnId].pos.x;
+    int j = lastMoves[turnId].pos.y;
     int dirLen = strlen(walls[i][j]);
 
     switch (lastMoves[turnId].direction) {
@@ -194,8 +194,9 @@ int generateMove(char ***walls, Move *lastMoves, uint32_t turnId) {
 	else if (!string_contains('E', walls[i][j], dirLen)) {
 	    return 'E';
 	}
-	else:
+	else {
 	    return 'N';
+	}
 	break;
 
     case 'S':
@@ -208,8 +209,9 @@ int generateMove(char ***walls, Move *lastMoves, uint32_t turnId) {
 	else if (!string_contains('W', walls[i][j], dirLen)) {
             return 'W';
         }
-	else:
+	else {
 	    return 'S';
+	}
 	break;
 
     case 'E':
@@ -222,8 +224,9 @@ int generateMove(char ***walls, Move *lastMoves, uint32_t turnId) {
 	else if (!string_contains('S', walls[i][j], dirLen)) {
             return 'S';
         }
-	else:
+	else {
 	    return 'E';
+	}
 	break;
 
     case 'W':
@@ -236,8 +239,9 @@ int generateMove(char ***walls, Move *lastMoves, uint32_t turnId) {
 	else if (!string_contains('N', walls[i][j], dirLen)) {
             return 'N';
         }
-	else:
+	else {
 	    return 'W';
+	}
 	break;
     }
 
