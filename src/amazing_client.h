@@ -37,17 +37,9 @@ int addOneSidedWall(char ***walls, uint32_t x, uint32_t y,
 
 int string_contains(char value, char *array, int size);
 
-<<<<<<< HEAD
-int generateMove(char **walls, Move *lastMoves, uint32_t turn.avatar_turn.TurnId);
-
-// **REMEMBER**
-// add border of maze to **walls
-// write log file function
-// add locks
-=======
 void draw(char ***walls, Move *lastMoves, XYPos *newPositions, uint32_t prevTurn);
 
 int generateMove(char ***walls, Move *lastMoves, uint32_t turnId);
 
 #endif // AMAZING_CLIENT_H
->>>>>>> 8106fbf297e429f552c9ffe5ac14c2ec9aebbec0
+
