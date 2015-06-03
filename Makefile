@@ -5,3 +5,6 @@ MAZE_H_DEPS=src/amazing.h src/startup.h src/amazing_client.h
 
 AM_Startup: $(MAZE_C_DEPS) $(MAZE_H_DEPS)
 	$(CC) $(CFLAGS) -o $@ $(MAZE_C_DEPS) -lm -lpthread
+
+clean:
+	rm -f AM_Startup
