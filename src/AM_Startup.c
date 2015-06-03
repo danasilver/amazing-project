@@ -213,9 +213,11 @@ int main(int argc, char *argv[]){
         strcpy(ipBuf, ipAddress);
         params->ipAddress = ipBuf;
 
-        char *logfileBuf = malloc(sizeof(char) * (strlen(logFileName) + 1));
-        strcpy(logfileBuf, logFileName);
-        params->logfile = logfileBuf;
+        // char *logfileBuf = malloc(sizeof(char) * (strlen(logFileName) + 1));
+        // strcpy(logfileBuf, logFileName);
+        // params->logfile = logfileBuf;
+
+        params->logfile = logFile;
 
         params->width = recvMessage.init_ok.MazeWidth;
         params->height = recvMessage.init_ok.MazeHeight;
@@ -230,7 +232,7 @@ int main(int argc, char *argv[]){
         pthread_join(threads[i], NULL);
     }
 
-    fclose(logFile);
+    // fclose(logFile);
 }
 
 int initializeLastMoves(Move **moveArray, int n) {

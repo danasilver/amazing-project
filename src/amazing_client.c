@@ -64,11 +64,11 @@ void *new_amazing_client(void *threadArgs) {
 
     printf("maze port: %d\n", (int) args->mazePort);
 
-    FILE *logfp = fopen(args->logfile, "a");
-    if (!logfp) {
-        fprintf(stderr, "Error opening logfile");
-        return NULL;
-    }
+    // FILE *logfp = fopen(args->logfile, "a");
+    // if (!logfp) {
+    //     fprintf(stderr, "Error opening logfile");
+    //     return NULL;
+    // }
 
     int sockfd;
     struct sockaddr_in servaddr;
@@ -95,7 +95,7 @@ void *new_amazing_client(void *threadArgs) {
     ready_message.avatar_ready.AvatarId = htonl(args->avatarId);
     send(sockfd, &ready_message, sizeof(AM_Message), 0);
 
-    fprintf(logfp, "Avatar %" PRIu32 " sent ready message to server.\n",
+    fprintf(args->logfile, "Avatar %" PRIu32 " sent ready message to server.\n",
             args->avatarId);
 
     AM_Message turn;
@@ -115,14 +115,13 @@ void *new_amazing_client(void *threadArgs) {
             // if avatar 0 indicate maze solved and write to file
 
             if (args->avatarId == 0) {
-                printf("Maze solved!\n");
 
                 turn.maze_solved.nAvatars = ntohl(turn.maze_solved.nAvatars);
                 turn.maze_solved.Difficulty = ntohl(turn.maze_solved.Difficulty);
                 turn.maze_solved.nMoves = ntohl(turn.maze_solved.nMoves);
                 turn.maze_solved.Hash = ntohl(turn.maze_solved.Hash);
 
-                fprintf(logfp, "Solved maze with difficulty %" PRIu32
+                fprintf(args->logfile, "Solved maze with difficulty %" PRIu32
                                " with %" PRIu32
                                " avatars in %" PRIu32
                                " moves. Hash: %" PRIu32 "\n",
@@ -130,9 +129,17 @@ void *new_amazing_client(void *threadArgs) {
                         turn.maze_solved.nAvatars,
                         turn.maze_solved.nMoves,
                         turn.maze_solved.Hash);
-            }
 
-            break;
+                // fclose(logfp);
+                break;
+
+                printf("Maze solved!\n");
+            }
+            else {
+
+                // fclose(logfp);
+                break;
+            }
         }
 
         moves++;
@@ -140,11 +147,6 @@ void *new_amazing_client(void *threadArgs) {
         for (i = 0; i < args->nAvatars; i++) {
             turn.avatar_turn.Pos[i].x = ntohl(turn.avatar_turn.Pos[i].x);
             turn.avatar_turn.Pos[i].y = ntohl(turn.avatar_turn.Pos[i].y);
-
-            fprintf(logfp, "Avatar %d is now at (%d, %d)\n",
-                    i,
-                    (int) turn.avatar_turn.Pos[i].x,
-                    (int) turn.avatar_turn.Pos[i].y);
         }
 
         uint32_t nextTurn = turn.avatar_turn.TurnId;
@@ -157,13 +159,19 @@ void *new_amazing_client(void *threadArgs) {
         }
 
         if (turn.avatar_turn.TurnId == args->avatarId) {
-            if (moves == 1) {
-                for (i = 0; i < args->nAvatars; i++) {
+            for (i = 0; i < args->nAvatars; i++) {
+                if (moves == 1) {
                     lastMoves[i].pos.x = turn.avatar_turn.Pos[i].x;
                     lastMoves[i].pos.y = turn.avatar_turn.Pos[i].y;
                 }
+
+                fprintf(args->logfile, "Avatar %d is now at (%d, %d)\n",
+                    i,
+                    (int) turn.avatar_turn.Pos[i].x,
+                    (int) turn.avatar_turn.Pos[i].y);
             }
-            else if (moves > 1) {
+
+            if (moves > 1) {
                 if (turn.avatar_turn.Pos[prevTurn].x == lastMoves[prevTurn].pos.x &&
                     turn.avatar_turn.Pos[prevTurn].y == lastMoves[prevTurn].pos.y) {
 
@@ -187,7 +195,7 @@ void *new_amazing_client(void *threadArgs) {
 
             lastMoves[nextTurn].attemptedDirection = nextDirection;
 
-            fprintf(logfp, "Attempting to move avatar %d direction %d\n",
+            fprintf(args->logfile, "Attempting to move avatar %d direction %d\n",
                    (int) nextTurn, directionToAmazingDirection(nextDirection));
 
             AM_Message move_message;
@@ -199,8 +207,6 @@ void *new_amazing_client(void *threadArgs) {
         }
 
     }
-
-    fclose(logfp);
 
     return NULL;
 }

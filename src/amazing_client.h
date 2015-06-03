@@ -23,7 +23,7 @@ typedef struct AM_Args {
     uint32_t height;    // maze height
     char ***walls;
     Move *lastMoves;
-    char *logfile;      // filename to append to
+    FILE *logfile;      // filename to append to
 } AM_Args;
 
 void *new_amazing_client(void *args);
