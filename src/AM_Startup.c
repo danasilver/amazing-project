@@ -97,38 +97,7 @@ int main(int argc, char *argv[]){
 
     int sockfd; //socket descriptor
 
-    // We will use getaddrinfo() to get information about the server in order to
-    // connect to it. NOT gethostbyname() ( https://piazza.com/class/i6mshngxse220l?cid=758 )
-    // struct addrinfo *res = NULL; //After passin getaddrinfo(), res will contain the server information.
-    // // res->ai_addr
-    // // res->ai_addrlen
-    // struct addrinfo hints;
-    // //Set hints to the correct stuff
-    // memset(&hints, 0, sizeof(hints));
-    // hints.ai_family = AF_INET; // Following IPv4 Protocol.
-    // hints.ai_socktype = SOCK_STREAM; // TCP
-    // hints.ai_protocol = 0; //assignment instructions
 
-    // if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
-    // printf("Error in creating socket... \n"); //We probably should never get an error for this. This is just a sanity check.
-    // return -1;
-    // }
-    // int check = getaddrinfo(hostname,AM_SERVER_PORT,&hints,&res);
-    // if(check != 0 /* || check != NULL */){
-    //  printf("Something went wrong in acquiring server information... [ getaddrinfo() ] \n");
-    //  return -1;
-    // }
-    // printf("%d, %d\n", res->ai_addr->sa_family, res->ai_addrlen);
-    // int c_check;
-    // c_check = connect(sockfd, res->ai_addr, res->ai_addrlen);
-    //     if(c_check==-1){
-    //         printf("Error in connecting to server: %s \n", hostname);
-    //         return -1;
-    //     }
-
-    //~~~~~
-    //WE WILL USE THIS IF WE CANNOT FIGURE OUT THE WARNING WHEN COMPILING THE ABOVE CODE BLOCK WITH -std=gnu99
-    //IF WE USE THIS CODE
     struct hostent *hostinfo;
     if ((hostinfo = gethostbyname(hostname)) == NULL) {
         printf("Something went wrong in acquiring server information... [ gethostbyname() ] \n");
