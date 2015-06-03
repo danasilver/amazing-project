@@ -85,7 +85,9 @@ int string_contains(char value, char *array, int size);
  * Return void
  *
  */
-void draw(char ***walls, Move *lastMoves, XYPos *newPositions, uint32_t prevTurn, uint32_t width, uint32_t height, uint32_t nAvatars);
+void draw(char ***walls, Move *lastMoves, XYPos *newPositions,
+          uint32_t prevTurn, uint32_t width, uint32_t height,
+          uint32_t nAvatars);
 
 /*
  * generateMove - generates a move to send to the server

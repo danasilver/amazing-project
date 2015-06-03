@@ -11,12 +11,12 @@
  *
  * Error Conditions:
  *
- * Special Considerations:                             
+ * Special Considerations:
  */
 /* ========================================================================== */
 // ---------------- Open Issues
 
-// ---------------- System includes e.g., <stdio.h>    
+// ---------------- System includes e.g., <stdio.h>
 
 // ---------------- File includes
 #include "amazing_client.h"
@@ -45,9 +45,9 @@ int initializeLastMoves(Move **moveList, int n);
 
 /*
  * printUsage - prints usage information for the program
- *
- * void
  */
 void printUsage();
+
+void freeLastMoves(Move *moveArray);
 
 #endif // STARTUP_H

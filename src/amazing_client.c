@@ -63,14 +63,6 @@ void *new_amazing_client(void *threadArgs) {
         return NULL;
     }
 
-    printf("maze port: %d\n", (int) args->mazePort);
-
-    // FILE *logfp = fopen(args->logfile, "a");
-    // if (!logfp) {
-    //     fprintf(stderr, "Error opening logfile");
-    //     return NULL;
-    // }
-
     int sockfd;
     struct sockaddr_in servaddr;
     char ***walls = args->walls;
@@ -108,7 +100,8 @@ void *new_amazing_client(void *threadArgs) {
         turn.type = ntohl(turn.type);
 
         if (IS_AM_ERROR(turn.type)) {
-            fprintf(stderr, "Error receiving message from server.");
+            fprintf(stderr, "Received error %" PRIu32 " from server.\n",
+                    turn.type);
             break;
         }
 
@@ -131,14 +124,9 @@ void *new_amazing_client(void *threadArgs) {
                         turn.maze_solved.nMoves,
                         turn.maze_solved.Hash);
 
-                // fclose(logfp);
                 break;
-
-                printf("Maze solved!\n");
             }
             else {
-
-                // fclose(logfp);
                 break;
             }
         }
@@ -209,6 +197,7 @@ void *new_amazing_client(void *threadArgs) {
 
     }
 
+    freeAMArgs(args);
     return NULL;
 }
 
@@ -474,5 +463,17 @@ int string_contains(char value, char *array, int size) {
         }
     }
     return 0;
+}
+
+void freeAMArgs(AM_Args *args) {
+    if (args) {
+        if (args->ipAddress) {
+            free(args->ipAddress);
+            args->ipAddress = NULL;
+        }
+
+        free(args);
+        args = NULL;
+    }
 }
 

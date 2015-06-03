@@ -222,6 +222,11 @@ int main(int argc, char *argv[]){
     freeWalls(walls,
               recvMessage.init_ok.MazeWidth,
               recvMessage.init_ok.MazeHeight);
+    freeLastMoves(lastMoves);
+    free(threads);
+    free(hostname);
+
+    return 0;
 }
 
 int initializeLastMoves(Move **moveArray, int n) {
@@ -236,6 +241,13 @@ int initializeLastMoves(Move **moveArray, int n) {
     }
 
     return 0;
+}
+
+void freeLastMoves(Move *moveArray) {
+    if (moveArray) {
+        free(moveArray);
+        moveArray = NULL;
+    }
 }
 
 int integerLength(int x) {
