@@ -28,11 +28,12 @@
 // ---------------- File includes
 #include "amazing.h"
 #include "amazing_client.h"
+#include "walls.h"
 
 /*
  * Main function for new_amazing_client
  *
- * Input: pointer to an AM_Args struct. 
+ * Input: pointer to an AM_Args struct.
  *
  * Output: N/A
  *
@@ -42,7 +43,7 @@
  * 3. Create a socket to connect to the server
  * 4. Send an AM_AVATAR_READY message to the server
  * 5. Continuously check for an IS_AM_ERROR and AM_MAZE_SOLVED
- *    message from the server. Exit upon receiving either, but 
+ *    message from the server. Exit upon receiving either, but
  *    first write to the log file for the latter.
  * 6. If the avatar detects that it is its turn to move, it checks
  *    to see if the previous avatar made a successful move. If the
@@ -51,7 +52,7 @@
  *    previous avatar's attempt as its last move.
  * 7. The avatar generates a move to send to the server.
  * 8. Once the maze has been solved or an error has been detected,
- *    the program will close the log file and return NULL. 
+ *    the program will close the log file and return NULL.
  *
  */
 void *new_amazing_client(void *threadArgs) {
@@ -212,7 +213,7 @@ void *new_amazing_client(void *threadArgs) {
 }
 
 /*
- * Function to determine the directional difference between two 
+ * Function to determine the directional difference between two
  * coordinates.
  *
  * Input: two (x,y) coordinates––(x1, y1) and (x2, y2).
@@ -229,88 +230,6 @@ char directionDiff(int from_x, int from_y, int to_x, int to_y) {
     else if (from_x < to_x) return 'E';
     else if (from_y > to_y) return 'N';
     else                    return 'S';
-}
-
-/*
- * Function to add a two sided wall to the list of known walls.
- *
- * Input: pointer to the walls array to add to, pointer to the array
- * of last moves, the avatar ID of the avatar that just moved, the
- * width of the maze, and the height of the maze.
- *
- * Output: 0 to indicate success.
- *
- * Pseudocode: 
- * 1. Checks to determine which directions it should store.
- * 2. Calls 'addOneSidedWall' twice––once for the direction passed
- *    as a parameter, and once for its opposite direction at an
- *    adjacent maze cell.
- *
- */
-int addTwoSidedWall(char ***walls, Move *lastMoves, uint32_t prevTurn, uint32_t width, uint32_t height) {
-    int i = lastMoves[prevTurn].pos.x;
-    int j = lastMoves[prevTurn].pos.y;
-
-    switch (lastMoves[prevTurn].attemptedDirection) {
-    case 'N':
-        addOneSidedWall(walls, i, j, 'N', width, height);
-        addOneSidedWall(walls, i, j - 1, 'S', width, height);
-        break;
-
-    case 'S':
-        addOneSidedWall(walls, i, j, 'S', width, height);
-        addOneSidedWall(walls, i, j + 1, 'N', width, height);
-        break;
-
-    case 'E':
-        addOneSidedWall(walls, i, j, 'E', width, height);
-        addOneSidedWall(walls, i + 1, j, 'W', width, height);
-        break;
-
-    case 'W':
-        addOneSidedWall(walls, i, j, 'W', width, height);
-        addOneSidedWall(walls, i - 1, j, 'E', width, height);
-        break;
-    }
-
-    return 0;
-}
-
-
-/*
- * Function to add a one-sided wall to the list of known walls.
- *
- * Input: a pointer to a 3D array of maze walls, the (x,y) location
- * of the wall, a char direction in which to erect the wall, and
- * the width and height of the maze.
- *
- * Output: 0 to indicate success, 1 otherwise.
- *
- * Pseudocode: 
- * 1. Check that the wall location is within the maze bounds.
- * 2. Add the direction character to the end of the 
- *    appropriate element in the walls array.
- *
- */
-int addOneSidedWall(char ***walls, uint32_t x, uint32_t y, char direction,
-                    uint32_t width, uint32_t height) {
-    if (x < 0 || x >= width) {
-        return 1;
-    }
-    if (y < 0 || y >= height) {
-        return 1;
-    }
-
-    int dirLen = strlen(walls[x][y]);
-
-    if (string_contains(direction, walls[x][y], dirLen)) {
-        return 1;
-    }
-
-    walls[x][y][dirLen] = direction;
-    walls[x][y][dirLen + 1] = '\0';
-
-    return 0;
 }
 
 /*
@@ -335,7 +254,7 @@ int addOneSidedWall(char ***walls, uint32_t x, uint32_t y, char direction,
  *                      0     |   |
  *    +   +   +   +   +   +   +---+
  *
- *  
+ *
  *    '+' represents a corner
  *    '----' represents a horizontal wall
  *    ' | ' represents a vertical wall
@@ -395,7 +314,7 @@ void draw(char ***walls, Move *lastMoves, XYPos *newPositions, uint32_t prevTurn
  * Function to determine whether or not an avatar is present
  * at a location.
  *
- * Input: the number of avatars, a pointer to an array of 
+ * Input: the number of avatars, a pointer to an array of
  * positions, and x and y values to represent a coordinate on
  * the maze.
  *
@@ -426,7 +345,7 @@ int avatarAtLocation(int nAvatars, XYPos *positions, int x, int y) {
  * Function to convert char directions to server moves.
  *
  * Input: a char direction
- * 
+ *
  * Output: a uint32_t message to send to the server.
  *
  * Pseudocode: Depending on the direction, the function
@@ -464,8 +383,8 @@ uint32_t directionToAmazingDirection(char direction) {
  *    attempted move so that the avatar can move relative to that
  *    attempt.
  * 4. If the avatar has made a successful move, then move according to
- *    that position. 
- * 5. Follow the left hand rule to generate a next move: for example, 
+ *    that position.
+ * 5. Follow the left hand rule to generate a next move: for example,
  *    if the avatar is pointed north, first try to turn west. If the
  *    avatar finds a wall to the west, then try to move north. If there
  *    is a wall to the north, then attempt to move east. If all those
@@ -539,13 +458,13 @@ int generateMove(char ***walls, Move *lastMoves, uint32_t turnId) {
  *
  * Output: 1 if the substring was found, 0 if not.
  *
- * Pseudocode: 
+ * Pseudocode:
  * 1. Loop through every character in the array.
  * 2. If the character being looked at matches the character
  *    the function is looking for, then return 1.
  * 3. If the function has looked through every character in the
  *    string without success, then return 0.
- * 
+ *
  */
 int string_contains(char value, char *array, int size) {
     int i;

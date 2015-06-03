@@ -14,9 +14,9 @@
  * Special Considerations:
  */
 /* ========================================================================== */
-// ---------------- Open Issues                        
+// ---------------- Open Issues
 
-// ---------------- System includes e.g., <stdio.h>    
+// ---------------- System includes e.g., <stdio.h>
 #include "amazing.h"
 
 
@@ -60,36 +60,6 @@ void *new_amazing_client(void *args);
  */
 void freeAMArgs(AM_Args *args);
 
-/*
- * addTwoSidedWall - adds a two sided wall at an (x,y) coordinate
- * in the maze
- * @walls: pointer to the array of known walls to add to
- * @lastMoves: pointer to the array of last moves made by each
- *  avatar
- * @prevTurn: avatar ID of the last avatar to make a move
- * @width: width of the maze
- * @height: height of the maze
- *
- * Return 0 to indicate success
- *
- */
-int addTwoSidedWall(char ***walls, Move *lastMoves,
-                    uint32_t prevTurn, uint32_t width, uint32_t height);
-/*
- * addOneSidedWall - adds a one sided wall at an (x,y) coordinate
- * in the maze
- * @walls: pointer to the array of known walls to add to
- * @x: x coordinate of place in maze to erect wall
- * @y: y coordiante of place in maze to erect wall
- * @direction: direction in which to erect wall
- * @width: width of the maze
- * @height: height of the maze
- *
- * Return 0 to indicate success, 1 otherwise
- *
- */
-int addOneSidedWall(char ***walls, uint32_t x, uint32_t y,
-                    char direction, uint32_t width, uint32_t height);
 /*
  * string_contains - determines presence of character in a string
  * @value: the character to be searched for
@@ -159,7 +129,7 @@ char directionDiff(int from_x, int from_y, int to_x, int to_y);
  * @x: x location to look at
  * @y: y location to look at
  *
- * Return -1 to indicate no avatar present, otherwise avatar ID 
+ * Return -1 to indicate no avatar present, otherwise avatar ID
  * of the avatar found at that location.
  *
  */
