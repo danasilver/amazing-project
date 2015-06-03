@@ -17,6 +17,7 @@
 #include "amazing.h"
 #include "startup.h"
 #include "amazing_client.h"
+#include "walls.h"
 
 int main(int argc, char *argv[]){
     int nAvatars;
@@ -84,31 +85,21 @@ int main(int argc, char *argv[]){
         }
     }
 
-    // Note: hostnames this term are either: stowe.cs.dartmouth.edu OR carter.cs.dartmouth.edu
-
-    //AMStartup needs to CONSTRUCT AND SEND message AM_INIT to the server.
-    //In order to send a message, our client must first:
-    //1. Create a socket (use the socket() function) -- which is an 'endpoint'
-    //2. Connect with the server (use the connect() function)
-
-    // Since we are using TCP client and IPv4 protocols, we will use SOCK_STREAM
-    // as the type and AF_INET as the protocol family.
-    //Protocol value is set to 0. (Lec 25, "protocol value can be set to 0 for this course.")
-
-    int sockfd; //socket descriptor
-
-
+    // Resolve hostname
     struct hostent *hostinfo;
     if ((hostinfo = gethostbyname(hostname)) == NULL) {
-        printf("Something went wrong in acquiring server information... [ gethostbyname() ] \n");
-        return -1;
+        fprintf(stderr, "Unable to resolve hostname.\n");
+        exit(EXIT_FAILURE);
     }
 
+    // Create socket with socket file descriptor
+    int sockfd;
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         fprintf(stderr, "Error creating socket.\n");
         exit(EXIT_FAILURE);
     }
 
+    // Connect to the socket
     struct sockaddr_in servaddr;
     servaddr.sin_family = AF_INET;
     memcpy(&servaddr.sin_addr.s_addr,
@@ -118,17 +109,13 @@ int main(int argc, char *argv[]){
 
     int c_check;
     c_check = connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
-    if(c_check==-1){
-        printf("Error in connecting to server: %s \n", hostname);
-        return -1;
+    if(c_check == -1){
+        fprintf(stderr, "Error in connecting to server: %s\n", hostname);
+        close(sockfd);
+        exit(EXIT_FAILURE);
     }
-        //~~~~~~
 
-        //Now that the client has connected to the server, we must:
-        // 1. Construct the AM_INIT message.
-        // 2. Sends the message.
-        // 3. Receives the AM_INIT_OK message from server and recovers MazePort from the reply.
-
+    // Send the init message
     AM_Message initMessage;
     memset(&initMessage, 0, sizeof(AM_Message));
 
@@ -137,7 +124,6 @@ int main(int argc, char *argv[]){
     initMessage.init.Difficulty = htonl((uint32_t)difficulty);
 
     send(sockfd, &initMessage, sizeof(AM_Message), 0);
-    printf("initMessage Sent! \n");
 
     AM_Message recvMessage;
     memset(&recvMessage, 0, sizeof(AM_Message));
@@ -147,23 +133,25 @@ int main(int argc, char *argv[]){
     recvMessage.type = ntohl(recvMessage.type);
     if (recvMessage.type & AM_INIT_FAILED) {
         fprintf(stderr, "AM_INIT failed. Unable to create maze.\n");
+        close(sockfd);
         exit(EXIT_FAILURE);
     }
-
-    printf("recvMessage received!\n");
 
     recvMessage.init_ok.MazePort = ntohl(recvMessage.init_ok.MazePort);
     recvMessage.init_ok.MazeWidth = ntohl(recvMessage.init_ok.MazeWidth);
     recvMessage.init_ok.MazeHeight = ntohl(recvMessage.init_ok.MazeHeight);
 
+    // Get USERID for log
     char *userID = getenv("USER");
+
+    // Get time for log
+    time_t curtime;
+    time(&curtime);
+
     int logFileNameLength = strlen(userID) +
                         integerLength(nAvatars) +
                         integerLength(difficulty) + 11;
     char logFileName[logFileNameLength];
-
-    time_t curtime;
-    time(&curtime);
 
     sprintf(logFileName, "AMAZING_%s_%d_%d", userID, nAvatars, difficulty);
     printf("LogName is: %s -- [AMAZING_userID_nAvatars_difficulty] \n", logFileName);
@@ -171,15 +159,17 @@ int main(int argc, char *argv[]){
     FILE* logFile = fopen(logFileName, "w");
     if (!logFile) {
         fprintf(stderr, "Log file %s could not be opened.\n", logFileName);
+        close(sockfd);
         exit(EXIT_FAILURE);
     }
 
     fprintf(logFile, "%s, %" PRIu32 ", %s",
             userID, recvMessage.init_ok.MazePort, ctime(&curtime));
-    printf("logFile created and written to! \n");
 
     char ipAddress[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(servaddr.sin_addr), ipAddress, INET_ADDRSTRLEN);
+
+    close(sockfd);
 
     Move *lastMoves;
     initializeLastMoves(&lastMoves, nAvatars);
@@ -213,10 +203,6 @@ int main(int argc, char *argv[]){
         strcpy(ipBuf, ipAddress);
         params->ipAddress = ipBuf;
 
-        // char *logfileBuf = malloc(sizeof(char) * (strlen(logFileName) + 1));
-        // strcpy(logfileBuf, logFileName);
-        // params->logfile = logfileBuf;
-
         params->logfile = logFile;
 
         params->width = recvMessage.init_ok.MazeWidth;
@@ -232,7 +218,10 @@ int main(int argc, char *argv[]){
         pthread_join(threads[i], NULL);
     }
 
-    // fclose(logFile);
+    fclose(logFile);
+    freeWalls(walls,
+              recvMessage.init_ok.MazeWidth,
+              recvMessage.init_ok.MazeHeight);
 }
 
 int initializeLastMoves(Move **moveArray, int n) {
@@ -245,17 +234,6 @@ int initializeLastMoves(Move **moveArray, int n) {
         fprintf(stderr, "Out of memory!\n");
         return 1;
     }
-
-    // int i;
-    // for (i = 0; i < n; i++) {
-    //     XYPos *newPos = calloc(1, sizeof(XYPos));
-    //     if (!newPos) {
-    //         fprintf(stderr, "Out of memory!\n");
-    //         return 1;
-    //     }
-
-    //     (**moveArray)[i]->pos = newPos;
-    // }
 
     return 0;
 }

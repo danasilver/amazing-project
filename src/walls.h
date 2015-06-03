@@ -38,3 +38,11 @@ int addTwoSidedWall(char ***walls, Move *lastMoves,
  */
 int addOneSidedWall(char ***walls, uint32_t x, uint32_t y,
                     char direction, uint32_t width, uint32_t height);
+
+/*
+ * Free the walls array and all internal arrays
+ * @walls: pointer to top level walls array
+ * @width: width of maze
+ * @height: height of maze
+ */
+void freeWalls(char ***walls, uint32_t width, uint32_t height);

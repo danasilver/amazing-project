@@ -93,3 +93,23 @@ int addOneSidedWall(char ***walls, uint32_t x, uint32_t y, char direction,
 
     return 0;
 }
+
+void freeWalls(char ***walls, uint32_t width, uint32_t height) {
+    int w, h;
+    if (walls) {
+        for (w = 0; w < (int) width; w++) {
+            for (h = 0; h < (int) height; h++) {
+                if (walls[w][h]) {
+                    free(walls[w][h]);
+                    walls[w][h] = NULL;
+                }
+            }
+            if (walls[w]) {
+                free(walls[w]);
+                walls[w] = NULL;
+            }
+        }
+        free(walls);
+        walls = NULL;
+    }
+}
