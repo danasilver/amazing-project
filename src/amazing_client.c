@@ -1,13 +1,13 @@
 /* ========================================================================== */
 /* File: amazing_client.c
  *
- * Authors: Dana Silver, Ellen Li
+ * Authors: Dana Silver, Shivang Sethi, Ellen Li
  *
  * Date: due 06/02/2015
  *
- * Input:
+ * Input: N/A
  *
- * Output:
+ * Output: N/A
  *
  * Error Conditions:
  *
@@ -20,8 +20,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>                 // memset
-//#include <sys/types.h>              // pthread
-//#include <sys/socket.h>             // socket functionality
 #include <netinet/in.h>             // network functionality
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -31,7 +29,31 @@
 #include "amazing.h"
 #include "amazing_client.h"
 
-
+/*
+ * Main function for new_amazing_client
+ *
+ * Input: pointer to an AM_Args struct. 
+ *
+ * Output: N/A
+ *
+ * Pseudocode:
+ * 1. Argument checking or invalid pointers.
+ * 2. Open the logfile
+ * 3. Create a socket to connect to the server
+ * 4. Send an AM_AVATAR_READY message to the server
+ * 5. Continuously check for an IS_AM_ERROR and AM_MAZE_SOLVED
+ *    message from the server. Exit upon receiving either, but 
+ *    first write to the log file for the latter.
+ * 6. If the avatar detects that it is its turn to move, it checks
+ *    to see if the previous avatar made a successful move. If the
+ *    previous avatar ran into a wall, then the program will update
+ *    the list of walls. If not, then the current avatar stores the
+ *    previous avatar's attempt as its last move.
+ * 7. The avatar generates a move to send to the server.
+ * 8. Once the maze has been solved or an error has been detected,
+ *    the program will close the log file and return NULL. 
+ *
+ */
 void *new_amazing_client(void *threadArgs) {
     AM_Args *args = (AM_Args *) threadArgs;
 
@@ -177,6 +199,19 @@ void *new_amazing_client(void *threadArgs) {
     return NULL;
 }
 
+/*
+ * Function to determine the directional difference between two 
+ * coordinates.
+ *
+ * Input: two (x,y) coordinates––(x1, y1) and (x2, y2).
+ *
+ * Output: a char ('N', 'S', 'E', or 'W') indicating the directional
+ * difference.
+ *
+ * Pseudocode: Compares the x1 to x2 and y1 and y2 to determine in
+ * which direction the avatar moved.
+ *
+ */
 char directionDiff(int from_x, int from_y, int to_x, int to_y) {
     if (from_x > to_x)      return 'W';
     else if (from_x < to_x) return 'E';
@@ -184,7 +219,22 @@ char directionDiff(int from_x, int from_y, int to_x, int to_y) {
     else                    return 'S';
 }
 
-
+/*
+ * Function to add a two sided wall to the list of known walls.
+ *
+ * Input: pointer to the walls array to add to, pointer to the array
+ * of last moves, the avatar ID of the avatar that just moved, the
+ * width of the maze, and the height of the maze.
+ *
+ * Output: 0 to indicate success.
+ *
+ * Pseudocode: 
+ * 1. Checks to determine which directions it should store.
+ * 2. Calls 'addOneSidedWall' twice––once for the direction passed
+ *    as a parameter, and once for its opposite direction at an
+ *    adjacent maze cell.
+ *
+ */
 int addTwoSidedWall(char ***walls, Move *lastMoves, uint32_t prevTurn, uint32_t width, uint32_t height) {
     int i = lastMoves[prevTurn].pos.x;
     int j = lastMoves[prevTurn].pos.y;
@@ -214,6 +264,22 @@ int addTwoSidedWall(char ***walls, Move *lastMoves, uint32_t prevTurn, uint32_t 
     return 0;
 }
 
+
+/*
+ * Function to add a one-sided wall to the list of known walls.
+ *
+ * Input: a pointer to a 3D array of maze walls, the (x,y) location
+ * of the wall, a char direction in which to erect the wall, and
+ * the width and height of the maze.
+ *
+ * Output: 0 to indicate success, 1 otherwise.
+ *
+ * Pseudocode: 
+ * 1. Check that the wall location is within the maze bounds.
+ * 2. Add the direction character to the end of the 
+ *    appropriate element in the walls array.
+ *
+ */
 int addOneSidedWall(char ***walls, uint32_t x, uint32_t y, char direction,
                     uint32_t width, uint32_t height) {
     if (x < 0 || x >= width) {
@@ -235,6 +301,35 @@ int addOneSidedWall(char ***walls, uint32_t x, uint32_t y, char direction,
     return 0;
 }
 
+/*
+ * Function to use ASCII graphics to depict the maze being
+ * solved and the avatars traversing it.
+ *
+ * Input: pointer to a 3D walls array, pointer to a lastMoves
+ * array, pointer to an array containing the new (x,y) positions
+ * of the avatars, the avatar ID of the previous avatar, the width
+ * of the maze, the height of the maze, and the number of avatars
+ * playing in the maze.
+ *
+ * Output: N/A
+ *
+ * Pseudocode: Draw the maze as follows:
+ *
+ *    +---+---+---+---+---+---+---+
+ *                              1 |
+ *    +---+---+---+   +   +---+   +
+ *                |       |   |   |
+ *    +   +   +---+   +   +   +   +
+ *                      0     |   |
+ *    +   +   +   +   +   +   +---+
+ *
+ *  
+ *    '+' represents a corner
+ *    '----' represents a horizontal wall
+ *    ' | ' represents a vertical wall
+ *    Numbers represent avatars
+ *
+ */
 void draw(char ***walls, Move *lastMoves, XYPos *newPositions, uint32_t prevTurn, uint32_t width, uint32_t height, uint32_t nAvatars) {
     int i, j;
     for (i = 0; i < (int) height; i++) {
@@ -284,6 +379,26 @@ void draw(char ***walls, Move *lastMoves, XYPos *newPositions, uint32_t prevTurn
     printf("\n\n");
 }
 
+/*
+ * Function to determine whether or not an avatar is present
+ * at a location.
+ *
+ * Input: the number of avatars, a pointer to an array of 
+ * positions, and x and y values to represent a coordinate on
+ * the maze.
+ *
+ * Output: if an avatar is found at the (x,y) location, then
+ * its avatar ID is returned. Otherwise, the function returns
+ * -1.
+ *
+ * Pseudocode:
+ * 1. For every avatar, check to see if its position matches
+ *    the (x,y) provided as a parameter. If so, return the
+ *    avatar ID.
+ * 2. If no avatar has proven to be at that (x,y) location,
+ *    return -1.
+ *
+ */
 int avatarAtLocation(int nAvatars, XYPos *positions, int x, int y) {
     int a;
     for (a = 0; a < nAvatars; a++) {
@@ -295,6 +410,17 @@ int avatarAtLocation(int nAvatars, XYPos *positions, int x, int y) {
     return -1;
 }
 
+/*
+ * Function to convert char directions to server moves.
+ *
+ * Input: a char direction
+ * 
+ * Output: a uint32_t message to send to the server.
+ *
+ * Pseudocode: Depending on the direction, the function
+ * returns the corresponding message.
+ *
+ */
 uint32_t directionToAmazingDirection(char direction) {
     switch (direction) {
         case '\0': return M_NULL_MOVE;
@@ -306,6 +432,34 @@ uint32_t directionToAmazingDirection(char direction) {
     }
 }
 
+
+/*
+ * Function to generate an avatar's move to send to the server.
+ *
+ * Input: pointer to a 3D array, pointer to an array of last moves,
+ * and the ID of the avatar whose turn it is to move.
+ *
+ * Output: a character representing the move to be made. '0'
+ * indicates that the avatar should not move, while 'N', 'W', 'E',
+ * 'S' indicate the four possible directions for the avatar to move.
+ *
+ * Pseudocode:
+ * 1. Checks that the avatar is not Avatar 0, which will always
+ *    stay in place. If the avatar is Avatar 0, return 0.
+ * 2. If the current avatar has reached the same position as Avatar 0,
+ *    then return 0 so that it does not move again.
+ * 3. If the avatar has not made a successful move yet, store the last
+ *    attempted move so that the avatar can move relative to that
+ *    attempt.
+ * 4. If the avatar has made a successful move, then move according to
+ *    that position. 
+ * 5. Follow the left hand rule to generate a next move: for example, 
+ *    if the avatar is pointed north, first try to turn west. If the
+ *    avatar finds a wall to the west, then try to move north. If there
+ *    is a wall to the north, then attempt to move east. If all those
+ *    fail, then try south.
+ *
+ */
 int generateMove(char ***walls, Move *lastMoves, uint32_t turnId) {
     if (turnId == 0) {
         return 0;
@@ -365,7 +519,22 @@ int generateMove(char ***walls, Move *lastMoves, uint32_t turnId) {
     return 0;
 }
 
-
+/*
+ * Function to determine the presence of a character in a string.
+ *
+ * Input: a character to search for, a pointer to the string to
+ * search within, and the size of the string.
+ *
+ * Output: 1 if the substring was found, 0 if not.
+ *
+ * Pseudocode: 
+ * 1. Loop through every character in the array.
+ * 2. If the character being looked at matches the character
+ *    the function is looking for, then return 1.
+ * 3. If the function has looked through every character in the
+ *    string without success, then return 0.
+ * 
+ */
 int string_contains(char value, char *array, int size) {
     int i;
     for (i = 0; i < size; i++) {
