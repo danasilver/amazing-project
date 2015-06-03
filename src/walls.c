@@ -94,6 +94,17 @@ int addOneSidedWall(char ***walls, uint32_t x, uint32_t y, char direction,
     return 0;
 }
 
+/*
+ * Free the walls data structure
+ * @walls: the walls 3d array to free
+ * @width: the width of the maze
+ * @height: the height of the maze
+ *
+ * Pseudocode:
+ * 1. Free char array cells
+ * 2. Free columns of the maze
+ * 3. Free the top level walls array
+ */
 void freeWalls(char ***walls, uint32_t width, uint32_t height) {
     int w, h;
     if (walls) {

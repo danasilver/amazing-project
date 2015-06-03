@@ -1,4 +1,3 @@
-/* ========================================================================== */
 /* File: amazing_client.c
  *
  * Authors: Dana Silver, Shivang Sethi, Ellen Li
@@ -8,15 +7,9 @@
  * Input: N/A
  *
  * Output: N/A
- *
- * Error Conditions:
- *
- * Special Considerations:
  */
-/* ========================================================================== */
-// ---------------- Open Issues
 
-// ---------------- System includes e.g., <stdio.h>
+// ---------------- System includes
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>                 // memset
@@ -180,7 +173,9 @@ void *new_amazing_client(void *threadArgs) {
             lastMoves[prevTurn].pos.x = turn.avatar_turn.Pos[prevTurn].x;
             lastMoves[prevTurn].pos.y = turn.avatar_turn.Pos[prevTurn].y;
 
-            int nextDirection = generateMove(walls, lastMoves, turn.avatar_turn.TurnId);
+            int nextDirection = generateMove(walls,
+                                             lastMoves,
+                                             turn.avatar_turn.TurnId);
 
             lastMoves[nextTurn].attemptedDirection = nextDirection;
 
@@ -465,6 +460,14 @@ int string_contains(char value, char *array, int size) {
     return 0;
 }
 
+/*
+ * Free the arguments to the thread
+ * @args: the arguments struct pointer
+ *
+ * Pseudocode:
+ * 1. Free the ipAddress
+ * 2. Free the arguments struct
+ */
 void freeAMArgs(AM_Args *args) {
     if (args) {
         if (args->ipAddress) {

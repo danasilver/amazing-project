@@ -112,8 +112,11 @@ int main(int argc, char *argv[]){
     if(c_check == -1){
         fprintf(stderr, "Error in connecting to server: %s\n", hostname);
         close(sockfd);
+        free(hostname);
         exit(EXIT_FAILURE);
     }
+
+    free(hostname);
 
     // Send the init message
     AM_Message initMessage;
@@ -193,6 +196,10 @@ int main(int argc, char *argv[]){
     int i;
     for (i = 0; i  < nAvatars; i++) {
         AM_Args *params = malloc(sizeof(AM_Args));
+        if (!params) {
+            fprintf(stderr, "Error: Out of memory.\n");
+            break;
+        }
 
         params->avatarId = i;
         params->nAvatars = nAvatars;
@@ -200,6 +207,10 @@ int main(int argc, char *argv[]){
         params->mazePort = recvMessage.init_ok.MazePort;
 
         char *ipBuf = malloc(sizeof(char) * (strlen(ipAddress) + 1));
+        if (!ipBuf) {
+            fprintf(stderr, "Error: Out of memory.\n");
+            break;
+        }
         strcpy(ipBuf, ipAddress);
         params->ipAddress = ipBuf;
 
@@ -211,24 +222,37 @@ int main(int argc, char *argv[]){
         params->walls = walls;
         params->lastMoves = lastMoves;
 
-        pthread_create(&threads[i], NULL, new_amazing_client, (void *)params);
+        int s;
+        s = pthread_create(&threads[i], NULL, new_amazing_client, (void *)params);
+        if (s != 0) {
+            fprintf(stderr, "Error createing threads.\n");
+            break;
+        }
     }
 
+    // Wait for avatars to return
     for (i = 0; i < nAvatars; i++) {
         pthread_join(threads[i], NULL);
     }
 
+    // Free memory
     fclose(logFile);
     freeWalls(walls,
               recvMessage.init_ok.MazeWidth,
               recvMessage.init_ok.MazeHeight);
     freeLastMoves(lastMoves);
     free(threads);
-    free(hostname);
 
     return 0;
 }
 
+/*
+ * Allocate space for the array of last moves
+ *
+ * Pseudocode:
+ * 1. Check if pointer is null
+ * 2. Calloc space for n elements, each with a Move struct
+ */
 int initializeLastMoves(Move **moveArray, int n) {
     if (!*moveArray) {
         return 1;
@@ -243,6 +267,13 @@ int initializeLastMoves(Move **moveArray, int n) {
     return 0;
 }
 
+/*
+ * Free the lastmoves array.
+ *
+ * Pseudocode:
+ * 1. Check if the array pointer is NULL
+ * 2. If not, free it and set NULL
+ */
 void freeLastMoves(Move *moveArray) {
     if (moveArray) {
         free(moveArray);
@@ -250,6 +281,14 @@ void freeLastMoves(Move *moveArray) {
     }
 }
 
+/*
+ * Return the number of digits in an integer.
+ * http://stackoverflow.com/questions/6655754
+ *
+ * Pseudocode:
+ * 1. Return 1 if x is 0 since can't take log(0)
+ * 2. Else return floor(log_10(|x|)) + 1
+ */
 int integerLength(int x) {
     if (x == 0) return 1;
 
