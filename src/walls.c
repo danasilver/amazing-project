@@ -1,3 +1,10 @@
+/* File: walls.c - Utilities for working with the maze walls data structure
+ *
+ * Authors: Dana Silver, Shivang Sethi, Ellen Li
+ *
+ * Date: due 06/02/2015
+ */
+
 #include <stdlib.h>             // calloc
 #include <stdio.h>              // fprintf
 #include <stdint.h>             // uint32_t
