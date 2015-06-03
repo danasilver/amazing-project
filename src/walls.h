@@ -40,6 +40,15 @@ int addOneSidedWall(char ***walls, uint32_t x, uint32_t y,
                     char direction, uint32_t width, uint32_t height);
 
 /*
+ * addBorders - add border walls to the maze
+ *
+ * @walls: pointer to the array of walls
+ * @width: width of the maze
+ * @height: height of the maze
+ */
+void addBorders(char ***walls, uint32_t width, uint32_t height);
+
+/*
  * Free the walls array and all internal arrays
  * @walls: pointer to top level walls array
  * @width: width of maze

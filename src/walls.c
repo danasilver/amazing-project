@@ -95,10 +95,31 @@ int addOneSidedWall(char ***walls, uint32_t x, uint32_t y, char direction,
 }
 
 /*
+ * Add border walls to the maze
+ *
+ * Pseudocode:
+ * 1. Go across and add a north wall to every top cell and a south wall to
+ *    every bottom cell.
+ * 2. Go down and add a west wall to every leftmost cell and an east wall to
+ *    every rightmost cell
+ */
+void addBorders(char ***walls, uint32_t width, uint32_t height) {
+    if (walls) {
+        int w, h;
+        for (w = 0; w < (int) width; w++) {
+            addOneSidedWall(walls, w, 0, 'N', width, height);
+            addOneSidedWall(walls, w, height - 1, 'S', width, height);
+        }
+
+        for (h = 0; h < (int) height; h++) {
+            addOneSidedWall(walls, 0, h, 'W', width, height);
+            addOneSidedWall(walls, width - 1, h, 'E', width, height);
+        }
+    }
+}
+
+/*
  * Free the walls data structure
- * @walls: the walls 3d array to free
- * @width: the width of the maze
- * @height: the height of the maze
  *
  * Pseudocode:
  * 1. Free char array cells

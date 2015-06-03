@@ -157,7 +157,6 @@ int main(int argc, char *argv[]){
     char logFileName[logFileNameLength];
 
     sprintf(logFileName, "AMAZING_%s_%d_%d", userID, nAvatars, difficulty);
-    printf("LogName is: %s -- [AMAZING_userID_nAvatars_difficulty] \n", logFileName);
 
     FILE* logFile = fopen(logFileName, "w");
     if (!logFile) {
@@ -192,6 +191,8 @@ int main(int argc, char *argv[]){
         }
     }
 
+    addBorders(walls, recvMessage.init_ok.MazeWidth, recvMessage.init_ok.MazeHeight);
+
     pthread_t *threads = calloc(nAvatars, sizeof(pthread_t));
     int i;
     for (i = 0; i  < nAvatars; i++) {
@@ -225,7 +226,7 @@ int main(int argc, char *argv[]){
         int s;
         s = pthread_create(&threads[i], NULL, new_amazing_client, (void *)params);
         if (s != 0) {
-            fprintf(stderr, "Error createing threads.\n");
+            fprintf(stderr, "Error creating threads.\n");
             break;
         }
     }
