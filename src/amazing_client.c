@@ -132,7 +132,6 @@ void *new_amazing_client(void *threadArgs) {
                         turn.maze_solved.Hash);
             }
 
-
             break;
         }
 
@@ -149,15 +148,22 @@ void *new_amazing_client(void *threadArgs) {
         }
 
         uint32_t nextTurn = turn.avatar_turn.TurnId;
-        uint32_t prevTurn = (turn.avatar_turn.TurnId - 1) % args->nAvatars;
-
-        if (moves == 1) {
-            lastMoves[args->avatarId].pos.x = turn.avatar_turn.Pos[args->avatarId].x;
-            lastMoves[args->avatarId].pos.y = turn.avatar_turn.Pos[args->avatarId].y;
+        uint32_t prevTurn;
+        if (turn.avatar_turn.TurnId - 1 != -1) {
+            prevTurn = turn.avatar_turn.TurnId - 1;
+        }
+        else {
+            prevTurn = args->nAvatars - 1;
         }
 
         if (turn.avatar_turn.TurnId == args->avatarId) {
-            if (moves > 1) {
+            if (moves == 1) {
+                for (i = 0; i < args->nAvatars; i++) {
+                    lastMoves[i].pos.x = turn.avatar_turn.Pos[i].x;
+                    lastMoves[i].pos.y = turn.avatar_turn.Pos[i].y;
+                }
+            }
+            else if (moves > 1) {
                 if (turn.avatar_turn.Pos[prevTurn].x == lastMoves[prevTurn].pos.x &&
                     turn.avatar_turn.Pos[prevTurn].y == lastMoves[prevTurn].pos.y) {
 
