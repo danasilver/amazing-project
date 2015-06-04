@@ -1,0 +1,45 @@
+README for CS50 Final Project
+Team UvaRara: Shivang Sethi, Dana Silver, and Ellen Li
+
+Editor: Sublime Text 2 & 3, Emacs
+Tested on: stowe.cs.dartmouth.edu
+
+
+Command line syntax: AM_Startup -d [DIFFICULTY] -n [AVATARS] -h [HOSTNAME]
+
+To compile, call 'make'
+
+
+Correct inputs:
+
+[DIFFICULTY]: must be between 0 and 9, inclusive. The program will inform the user
+and quit if the difficulty is not within this range.
+
+[AVATARS]: must be between 1 and 10, inclusive. The program will inform the user and
+quit if the number of avatars is not within this range.
+
+[HOSTNAME]: must be a valid hostname. 
+
+
+Output: 
+
+As the maze is being solved, an ASCII representation is displayed to stdout,
+showing the north and west walls on each cell, which correctly draws
+all two way walls, and some of the one way walls inserted when an avatar
+backtracks and blocks off a dead end.
+
+A logfile that describes all the moves that the avatars have made in solving
+the maze. The first line of the log file contains the MazePort, AvatarID, and
+the date and time. The rest of the logfile contains all the moves that the
+avatars made throughout the solving process.
+
+
+Heuristic:
+
+Our team implemented left hand rule with a few optimizations: 
+    1. Kept track of known walls so as to prevent avatars from making incorrect
+       moves more than once.
+    2. Cut off dead ends whenever found, so that other avatars would not make the
+       same mistake.
+    3. Stored the border of the maze in our walls array immediately, so that the
+       avatars never attempted to move outside of the maze bounds. 
