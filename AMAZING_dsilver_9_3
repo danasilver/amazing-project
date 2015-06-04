@@ -1,12 +1,12 @@
-dsilver, 53935, Wed Jun  3 23:39:52 2015
-Avatar 0 sent ready message to server.
-Avatar 2 sent ready message to server.
+dsilver, 55705, Wed Jun  3 23:42:39 2015
 Avatar 1 sent ready message to server.
-Avatar 8 sent ready message to server.
-Avatar 3 sent ready message to server.
-Avatar 6 sent ready message to server.
+Avatar 0 sent ready message to server.
 Avatar 7 sent ready message to server.
+Avatar 3 sent ready message to server.
+Avatar 8 sent ready message to server.
 Avatar 5 sent ready message to server.
+Avatar 6 sent ready message to server.
+Avatar 2 sent ready message to server.
 Avatar 4 sent ready message to server.
 Avatar 0 is now at (8, 9)
 Avatar 1 is now at (12, 8)
@@ -25118,4 +25118,4 @@ Avatar 6 is now at (8, 9)
 Avatar 7 is now at (8, 9)
 Avatar 8 is now at (7, 9)
 Attempting to move avatar 8 direction 3
-Solved maze with difficulty 3 with 9 avatars in 2510 moves. Hash: 252085911
+Solved maze with difficulty 3 with 9 avatars in 2510 moves. Hash: 1109095795

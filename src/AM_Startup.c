@@ -181,12 +181,15 @@ int main(int argc, char *argv[]){
 
     close(sockfd);
 
+    // Initialize data structures
     Move *lastMoves;
     if (initializeLastMoves(&lastMoves, nAvatars)) {
         fclose(logFile);
         exit(EXIT_FAILURE);
     }
 
+    // Initialize as an int *** so it can use the same initialization
+    // function as the visits
     int ***intWalls;
     if (initializeMazeInfo(&intWalls, recvMessage.init_ok.MazeWidth,
         recvMessage.init_ok.MazeHeight, 5)) {
@@ -195,6 +198,7 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
 
+    // Cast back to char ***
     char ***walls = (char ***)intWalls;
 
     int ***visits;
@@ -207,6 +211,7 @@ int main(int argc, char *argv[]){
                      recvMessage.init_ok.MazeHeight);
     }
 
+    // Add borders (walls we know exist) to the maze
     addBorders(walls, recvMessage.init_ok.MazeWidth,
                       recvMessage.init_ok.MazeHeight);
 
@@ -224,6 +229,7 @@ int main(int argc, char *argv[]){
     }
     int i;
     for (i = 0; i  < nAvatars; i++) {
+        // Create thread params and create new thread
         AM_Args *params = malloc(sizeof(AM_Args));
         if (!params) {
             fprintf(stderr, "Error: Out of memory.\n");
@@ -324,6 +330,9 @@ int integerLength(int x) {
     return (int) floor(log10(abs(x))) + 1;
 }
 
+/*
+ * Print usage to stdout.
+ */
 void printUsage() {
     printf("[Usage] ./AM_Startup -n nAvatars -d Difficulty -h Hostname.\n"
            "Solve a multiplayer maze by having avatars find each other.\n\n"
