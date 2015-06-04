@@ -174,21 +174,46 @@ int main(int argc, char *argv[]){
     close(sockfd);
 
     Move *lastMoves;
-    initializeLastMoves(&lastMoves, nAvatars);
+    if (initializeLastMoves(&lastMoves, nAvatars)) {
+        fclose(logFile);
+        exit(EXIT_FAILURE);
+    }
 
     int ***intWalls;
-    initializeMazeInfo(&intWalls, recvMessage.init_ok.MazeWidth,
-        recvMessage.init_ok.MazeHeight, 5);
+    if (initializeMazeInfo(&intWalls, recvMessage.init_ok.MazeWidth,
+        recvMessage.init_ok.MazeHeight, 5)) {
+        fclose(logFile);
+        freeLastMoves(lastMoves);
+        exit(EXIT_FAILURE);
+    }
 
     char ***walls = (char ***)intWalls;
 
     int ***visits;
-    initializeMazeInfo(&visits, recvMessage.init_ok.MazeWidth,
-        recvMessage.init_ok.MazeHeight, nAvatars);
+    if (initializeMazeInfo(&visits, recvMessage.init_ok.MazeWidth,
+        recvMessage.init_ok.MazeHeight, nAvatars)) {
+        fclose(logFile);
+        freeLastMoves(lastMoves);
+        freeMazeInfo((int ***)walls,
+                     recvMessage.init_ok.MazeWidth,
+                     recvMessage.init_ok.MazeHeight);
+    }
 
-    addBorders(walls, recvMessage.init_ok.MazeWidth, recvMessage.init_ok.MazeHeight);
+    addBorders(walls, recvMessage.init_ok.MazeWidth,
+                      recvMessage.init_ok.MazeHeight);
 
     pthread_t *threads = calloc(nAvatars, sizeof(pthread_t));
+    if (!threads) {
+        fprintf(stderr, "Error: Out of memory.\n");
+        fclose(logFile);
+        freeLastMoves(lastMoves);
+        freeMazeInfo((int ***)walls,
+                     recvMessage.init_ok.MazeWidth,
+                     recvMessage.init_ok.MazeHeight);
+        freeMazeInfo(visits,
+                     recvMessage.init_ok.MazeWidth,
+                     recvMessage.init_ok.MazeHeight);
+    }
     int i;
     for (i = 0; i  < nAvatars; i++) {
         AM_Args *params = malloc(sizeof(AM_Args));

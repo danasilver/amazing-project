@@ -52,7 +52,8 @@ void *new_amazing_client(void *threadArgs) {
     AM_Args *args = (AM_Args *) threadArgs;
 
     if (!args || !args->ipAddress || !args->logfile ||
-        !args->walls || !args->lastMoves) {
+        !args->walls || !args->lastMoves || !args->visits) {
+        freeAMArgs(args);
         return NULL;
     }
 
@@ -64,7 +65,8 @@ void *new_amazing_client(void *threadArgs) {
 
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("Error:");
-        exit(EXIT_FAILURE);
+        freeAMArgs(args);
+        return NULL;
     }
 
     memset(&servaddr, 0, sizeof(servaddr));
@@ -74,7 +76,9 @@ void *new_amazing_client(void *threadArgs) {
 
     if (connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr)) < 0) {
         perror("Error:");
-        exit(EXIT_FAILURE);
+        close(sockfd);
+        freeAMArgs(args);
+        return NULL;
     }
 
     AM_Message ready_message;
@@ -100,8 +104,6 @@ void *new_amazing_client(void *threadArgs) {
         }
 
         if (turn.type & AM_MAZE_SOLVED) {
-            // if avatar 0 indicate maze solved and write to file
-
             if (args->avatarId == 0) {
 
                 turn.maze_solved.nAvatars = ntohl(turn.maze_solved.nAvatars);
@@ -158,25 +160,26 @@ void *new_amazing_client(void *threadArgs) {
                 if (turn.avatar_turn.Pos[prevTurn].x == lastMoves[prevTurn].pos.x &&
                     turn.avatar_turn.Pos[prevTurn].y == lastMoves[prevTurn].pos.y) {
 
-                    addTwoSidedWall(walls, lastMoves, prevTurn, args->width, args->height);
+                    addTwoSidedWall(walls, lastMoves, prevTurn,
+                                    args->width, args->height);
                 }
                 else {
-                    lastMoves[prevTurn].direction = directionDiff(lastMoves[prevTurn].pos.x,
-                                                                  lastMoves[prevTurn].pos.y,
-                                                                  turn.avatar_turn.Pos[prevTurn].x,
-                                                                  turn.avatar_turn.Pos[prevTurn].y);
+                    uint32_t lastX = lastMoves[prevTurn].pos.x;
+                    uint32_t lastY = lastMoves[prevTurn].pos.y;
+                    uint32_t newX = turn.avatar_turn.Pos[prevTurn].x;
+                    uint32_t newY = turn.avatar_turn.Pos[prevTurn].y;
+                    lastMoves[prevTurn].direction = directionDiff(lastX, lastY,
+                                                                  newX, newY);
 
-                    if (visits[turn.avatar_turn.Pos[prevTurn].x][turn.avatar_turn.Pos[prevTurn].y][prevTurn]) {
-                        char wallDirection = directionDiff(turn.avatar_turn.Pos[prevTurn].x,
-                                                           turn.avatar_turn.Pos[prevTurn].y,
-                                                           lastMoves[prevTurn].pos.x,
-                                                           lastMoves[prevTurn].pos.y);
+                    if (visits[newX][newY][prevTurn]) {
+                        char wallDirection = directionDiff(newX, newY,
+                                                           lastX, lastY);
 
-                        addOneSidedWall(walls, turn.avatar_turn.Pos[prevTurn].x,
-                            turn.avatar_turn.Pos[prevTurn].y, wallDirection, args->width, args->height);
+                        addOneSidedWall(walls, newX, newY, wallDirection,
+                                        args->width, args->height);
                     }
                     else {
-                        visits[turn.avatar_turn.Pos[prevTurn].x][turn.avatar_turn.Pos[prevTurn].y][prevTurn] = 1;
+                        visits[newX][newY][prevTurn] = 1;
                     }
 
                 }
@@ -208,6 +211,7 @@ void *new_amazing_client(void *threadArgs) {
     }
 
     freeAMArgs(args);
+    close(sockfd);
     return NULL;
 }
 
@@ -255,12 +259,14 @@ char directionDiff(int from_x, int from_y, int to_x, int to_y) {
  *
  *
  *    '+' represents a corner
- *    '----' represents a horizontal wall
+ *    '---' represents a horizontal wall
  *    ' | ' represents a vertical wall
  *    Numbers represent avatars
  *
  */
-void draw(char ***walls, Move *lastMoves, XYPos *newPositions, uint32_t prevTurn, uint32_t width, uint32_t height, uint32_t nAvatars) {
+void draw(char ***walls, Move *lastMoves, XYPos *newPositions,
+          uint32_t prevTurn, uint32_t width, uint32_t height,
+          uint32_t nAvatars) {
     int i, j;
     for (i = 0; i < (int) height; i++) {
         for (j = 0; j < (int) width; j++) {
