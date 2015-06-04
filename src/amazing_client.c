@@ -41,7 +41,9 @@
  *    to see if the previous avatar made a successful move. If the
  *    previous avatar ran into a wall, then the program will update
  *    the list of walls. If not, then the current avatar stores the
- *    previous avatar's attempt as its last move.
+ *    previous avatar's attempt as its last move. If the previous avatar has
+ *    already visited its current cell it puts up a one sided wall
+ *    where it came from to indicate a dead end.
  * 7. The avatar generates a move to send to the server.
  * 8. Once the maze has been solved or an error has been detected,
  *    the program will close the log file and return NULL.
@@ -145,6 +147,7 @@ void *new_amazing_client(void *threadArgs) {
         if (turn.avatar_turn.TurnId == args->avatarId) {
             for (i = 0; i < args->nAvatars; i++) {
                 if (moves == 1) {
+                    // Initialize the lastMoves with initial positions
                     lastMoves[i].pos.x = turn.avatar_turn.Pos[i].x;
                     lastMoves[i].pos.y = turn.avatar_turn.Pos[i].y;
                 }
@@ -158,6 +161,7 @@ void *new_amazing_client(void *threadArgs) {
             if (moves > 1) {
                 if (turn.avatar_turn.Pos[prevTurn].x == lastMoves[prevTurn].pos.x &&
                     turn.avatar_turn.Pos[prevTurn].y == lastMoves[prevTurn].pos.y) {
+                    // Didn't move, add a two sided wall
 
                     addTwoSidedWall(walls, lastMoves, prevTurn,
                                     args->width, args->height);
@@ -171,6 +175,8 @@ void *new_amazing_client(void *threadArgs) {
                                                                   newX, newY);
 
                     if (visits[newX][newY][prevTurn]) {
+                        // Moved to a spot previously visited
+                        // Put up a one sided wall
                         char wallDirection = directionDiff(newX, newY,
                                                            lastX, lastY);
 
@@ -178,6 +184,7 @@ void *new_amazing_client(void *threadArgs) {
                                         args->width, args->height);
                     }
                     else {
+                        // Else, mark the spot visited
                         visits[newX][newY][prevTurn] = 1;
                     }
 
@@ -187,9 +194,11 @@ void *new_amazing_client(void *threadArgs) {
             draw(walls, lastMoves, turn.avatar_turn.Pos, prevTurn,
                  args->width, args->height, args->nAvatars);
 
+            // Set the previous avatar's last position to it's current position
             lastMoves[prevTurn].pos.x = turn.avatar_turn.Pos[prevTurn].x;
             lastMoves[prevTurn].pos.y = turn.avatar_turn.Pos[prevTurn].y;
 
+            // Compute and send the next move to the server
             int nextDirection = generateMove(walls,
                                              lastMoves,
                                              turn.avatar_turn.TurnId);
