@@ -119,6 +119,50 @@ void addBorders(char ***walls, uint32_t width, uint32_t height) {
 }
 
 /*
+ * Initialize a 3d array of maze information
+ * Either the walls in the maze or the visits
+ * Wall information is a char array and sizeof(char) == sizeof(int)
+ * so either will work here with some casting
+ *
+ * Pseudocode:
+ * 1. Allocate space for the top level array (width)
+ * 2. Allocate space for each column in the maze
+ * 3. Allocate n spaces at each column for the information
+ */
+int initializeMazeInfo(int ****arrayPtr, uint32_t width,
+                     uint32_t height, int n) {
+
+    *arrayPtr = calloc(width, sizeof(int **));
+    if (!*arrayPtr) {
+        fprintf(stderr, "Error: Out of memory.\n");
+        return 1;
+    }
+
+    int w;
+    for (w = 0; w < (int) width; w++) {
+        (*arrayPtr)[w] = calloc(height, sizeof(int *));
+        if (!(*arrayPtr)[w]) {
+            fprintf(stderr, "Error: Out of memory.\n");
+            return 1;
+        }
+    }
+
+    int h;
+    for (w = 0; w < (int) width; w++) {
+        for (h = 0; h < (int) height; h++) {
+            (*arrayPtr)[w][h] = calloc(n, sizeof(int));
+
+            if (!(*arrayPtr)[w][h]) {
+                fprintf(stderr, "Error: Out of memory.\n");
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+/*
  * Free the walls data structure
  *
  * Pseudocode:
@@ -126,22 +170,22 @@ void addBorders(char ***walls, uint32_t width, uint32_t height) {
  * 2. Free columns of the maze
  * 3. Free the top level walls array
  */
-void freeWalls(char ***walls, uint32_t width, uint32_t height) {
+void freeMazeInfo(int ***arrayPtr, uint32_t width, uint32_t height) {
     int w, h;
-    if (walls) {
+    if (arrayPtr) {
         for (w = 0; w < (int) width; w++) {
             for (h = 0; h < (int) height; h++) {
-                if (walls[w][h]) {
-                    free(walls[w][h]);
-                    walls[w][h] = NULL;
+                if (arrayPtr[w][h]) {
+                    free(arrayPtr[w][h]);
+                    arrayPtr[w][h] = NULL;
                 }
             }
-            if (walls[w]) {
-                free(walls[w]);
-                walls[w] = NULL;
+            if (arrayPtr[w]) {
+                free(arrayPtr[w]);
+                arrayPtr[w] = NULL;
             }
         }
-        free(walls);
-        walls = NULL;
+        free(arrayPtr);
+        arrayPtr = NULL;
     }
 }

@@ -59,6 +59,7 @@ void *new_amazing_client(void *threadArgs) {
     int sockfd;
     struct sockaddr_in servaddr;
     char ***walls = args->walls;
+    int ***visits = args->visits;
     Move *lastMoves = args->lastMoves;
 
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -164,6 +165,20 @@ void *new_amazing_client(void *threadArgs) {
                                                                   lastMoves[prevTurn].pos.y,
                                                                   turn.avatar_turn.Pos[prevTurn].x,
                                                                   turn.avatar_turn.Pos[prevTurn].y);
+
+                    if (visits[turn.avatar_turn.Pos[prevTurn].x][turn.avatar_turn.Pos[prevTurn].y][prevTurn]) {
+                        char wallDirection = directionDiff(turn.avatar_turn.Pos[prevTurn].x,
+                                                           turn.avatar_turn.Pos[prevTurn].y,
+                                                           lastMoves[prevTurn].pos.x,
+                                                           lastMoves[prevTurn].pos.y);
+
+                        addOneSidedWall(walls, turn.avatar_turn.Pos[prevTurn].x,
+                            turn.avatar_turn.Pos[prevTurn].y, wallDirection, args->width, args->height);
+                    }
+                    else {
+                        visits[turn.avatar_turn.Pos[prevTurn].x][turn.avatar_turn.Pos[prevTurn].y][prevTurn] = 1;
+                    }
+
                 }
             }
 

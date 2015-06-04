@@ -5,6 +5,9 @@
  * Date: due 06/02/2015
  */
 
+#ifndef WALLS_H
+#define WALLS_H
+
 #include <stdint.h>             // uint32_t
 #include "amazing_client.h"     // Move
 
@@ -49,9 +52,26 @@ int addOneSidedWall(char ***walls, uint32_t x, uint32_t y,
 void addBorders(char ***walls, uint32_t width, uint32_t height);
 
 /*
+ * initializeMazeInfo - inititalize an array of maze information
+ * This consists of information for each cell about the walls or
+ * avatar visits to the cell. It facilitates looking up the walls
+ * at that location or quick constant time access whether an avatar
+ * has visited a cell.
+ *
+ * @arrayPtr: the pointer to the array to initialize
+ * @width: the width of the maze
+ * @height: the height of the maze
+ * @n: the number of pieces of data (array size) at each cell
+ */
+int initializeMazeInfo(int ****arrayPtr, uint32_t width,
+                     uint32_t height, int n);
+
+/*
  * Free the walls array and all internal arrays
  * @walls: pointer to top level walls array
  * @width: width of maze
  * @height: height of maze
  */
-void freeWalls(char ***walls, uint32_t width, uint32_t height);
+void freeMazeInfo(int ***arrayPtr, uint32_t width, uint32_t height);
+
+#endif // WALLS_H

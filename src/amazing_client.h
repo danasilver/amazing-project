@@ -39,6 +39,7 @@ typedef struct AM_Args {
     uint32_t width;     // maze width
     uint32_t height;    // maze height
     char ***walls;
+    int ***visits;
     Move *lastMoves;
     FILE *logfile;      // filename to append to
 } AM_Args;

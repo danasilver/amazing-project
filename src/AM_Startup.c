@@ -176,20 +176,15 @@ int main(int argc, char *argv[]){
     Move *lastMoves;
     initializeLastMoves(&lastMoves, nAvatars);
 
-    char ***walls;
-    walls = calloc(recvMessage.init_ok.MazeWidth, sizeof(char **));
+    int ***intWalls;
+    initializeMazeInfo(&intWalls, recvMessage.init_ok.MazeWidth,
+        recvMessage.init_ok.MazeHeight, 5);
 
-    int w;
-    for (w = 0; w < (int) recvMessage.init_ok.MazeWidth; w++) {
-        walls[w] = calloc(recvMessage.init_ok.MazeHeight, sizeof(char *));
-    }
+    char ***walls = (char ***)intWalls;
 
-    int h;
-    for (w = 0; w < (int) recvMessage.init_ok.MazeWidth; w++) {
-        for (h = 0; h < (int) recvMessage.init_ok.MazeHeight; h++) {
-            walls[w][h] = calloc(5, sizeof(char));
-        }
-    }
+    int ***visits;
+    initializeMazeInfo(&visits, recvMessage.init_ok.MazeWidth,
+        recvMessage.init_ok.MazeHeight, nAvatars);
 
     addBorders(walls, recvMessage.init_ok.MazeWidth, recvMessage.init_ok.MazeHeight);
 
@@ -222,6 +217,7 @@ int main(int argc, char *argv[]){
 
         params->walls = walls;
         params->lastMoves = lastMoves;
+        params->visits = visits;
 
         int s;
         s = pthread_create(&threads[i], NULL, new_amazing_client, (void *)params);
@@ -238,7 +234,10 @@ int main(int argc, char *argv[]){
 
     // Free memory
     fclose(logFile);
-    freeWalls(walls,
+    freeMazeInfo((int ***)walls,
+              recvMessage.init_ok.MazeWidth,
+              recvMessage.init_ok.MazeHeight);
+    freeMazeInfo(visits,
               recvMessage.init_ok.MazeWidth,
               recvMessage.init_ok.MazeHeight);
     freeLastMoves(lastMoves);
@@ -255,10 +254,6 @@ int main(int argc, char *argv[]){
  * 2. Calloc space for n elements, each with a Move struct
  */
 int initializeLastMoves(Move **moveArray, int n) {
-    if (!*moveArray) {
-        return 1;
-    }
-
     *moveArray = calloc(n, sizeof(Move));
     if (!*moveArray) {
         fprintf(stderr, "Out of memory!\n");
