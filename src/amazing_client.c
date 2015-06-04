@@ -32,7 +32,6 @@
  *
  * Pseudocode:
  * 1. Argument checking or invalid pointers.
- * 2. Open the logfile
  * 3. Create a socket to connect to the server
  * 4. Send an AM_AVATAR_READY message to the server
  * 5. Continuously check for an IS_AM_ERROR and AM_MAZE_SOLVED

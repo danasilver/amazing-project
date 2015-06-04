@@ -43,11 +43,13 @@ int main(int argc, char *argv[]){
         case 'n':
             if (sscanf(optarg, "%d", &nAvatars) != 1) {
                 fprintf(stderr, "nAvatars is not a number... \n");
+                if (hostname) free(hostname);
                 exit(EXIT_FAILURE);
             }
             if (nAvatars < 1 || nAvatars > AM_MAX_AVATAR) {
-                fprintf(stderr, "Number of avatars must be between 1 and 10"
+                fprintf(stderr, "Number of avatars must be between 1 and 10 "
                                 "inclusive.\n");
+                if (hostname) free(hostname);
                 exit(EXIT_FAILURE);
             }
             break;
@@ -55,10 +57,12 @@ int main(int argc, char *argv[]){
         case 'd':
             if (sscanf(optarg, "%d", &difficulty) != 1) {
                 fprintf(stderr, "-d DIFFICULTY must be a number.\n");
+                if (hostname) free(hostname);
                 exit(EXIT_FAILURE);
             }
             if (difficulty < 0 || difficulty > AM_MAX_DIFFICULTY) {
-                fprintf(stderr, "Difficulty must 0-9, inclusive.\n");
+                fprintf(stderr, "Difficulty must be 0-9, inclusive.\n");
+                if (hostname) free(hostname);
                 exit(EXIT_FAILURE);
             }
             break;
@@ -78,9 +82,11 @@ int main(int argc, char *argv[]){
             else {
                 fprintf(stderr, "Unknown option character \\x%x.", optopt);
             }
+            if (hostname) free(hostname);
             exit(EXIT_FAILURE);
         default:
             printUsage();
+            if (hostname) free(hostname);
             return 0;
         }
     }
@@ -89,6 +95,7 @@ int main(int argc, char *argv[]){
     struct hostent *hostinfo;
     if ((hostinfo = gethostbyname(hostname)) == NULL) {
         fprintf(stderr, "Unable to resolve hostname.\n");
+        free(hostname);
         exit(EXIT_FAILURE);
     }
 
@@ -96,6 +103,7 @@ int main(int argc, char *argv[]){
     int sockfd;
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         fprintf(stderr, "Error creating socket.\n");
+        free(hostname);
         exit(EXIT_FAILURE);
     }
 
